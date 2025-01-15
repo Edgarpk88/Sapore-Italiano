@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lector NFC</title>
     <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkxlY3RvciBORkMiLAogICJzaG9ydF9uYW1lIjogIk5GQyBSZWFkZXIiLAogICJzdGFydF91cmwiOiAiLyIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzRDQUY1MCIsCiAgInRoZW1lX2NvbG9yIjogIiM0Q0FGNTAiLAogICJpY29ucyI6IFsKICAgIHsKICAgICAgInNyYyI6ICJkYXRhOmltYWdlL3N2Zyt4bWw7YmFzZTY0LFBEOTRiV3dnZG1WeWMybHZiajBpTVM0d0lpQmxibU52WkdsdVp6MGlkWFJtTFRnaVB6NEtQSE4yWnlCM2FXUjBhRDBpTlRBd0lpQm9aV2xuYUhROUlqVXdNQ0lnZG1sbGQwSnZlRDBpTUNBd0lEVXdNQ0ExTURBaUlIaHRiRzV6UFNKb2RIUndPaTh2ZDNkM0xuY3pMbTl5Wnk4eU1EQXdMM04yWnlJK0NqeHdZWFJvSUdROUlrMHhNREFnTVRBd1NEUXdNR2d5TURCb05EQXdTREV3TUZZeE1EQjZJaUJtYVd4c1BTSWpSa1pHUmtaR0lpQnpkSEp2YTJVOUlpTkdSa1pHUmtZaUx6NEtQQzl6ZG1jKyIsCiAgICAgICJzaXplcyI6ICI1MTJ4NTEyIiwKICAgICAgInR5cGUiOiAiaW1hZ2Uvc3ZnK3htbCIKICAgIH0KICBdCn0=">
-    <meta name="theme-color" content="#4CAF50">
+    <meta name="theme-color" content="#d60b0b">
     <style>
         body {
             font-family: 'Montserrat', sans-serif;
@@ -62,7 +62,7 @@
             transition: background-color 0.3s;
         }
         .button:disabled {
-            background-color: #cccccc;
+            background-color: #e25d56;
             cursor: not-allowed;
         }
         .status {
@@ -155,7 +155,7 @@
                         const text = textDecoder.decode(record.data);
 
                         // Enviar al webhook
-                        const response = await fetch('https://neurofay.app.n8n.cloud/webhook/c299bb02-8eca-4818-924f-129278d2b948/chat', {
+                        const response = await fetch('https://neurofay.app.n8n.cloud/webhook-test/863d7e4b-2454-4028-b2b7-66cc79b2c25b', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
