@@ -124,7 +124,7 @@
                         const text = textDecoder.decode(record.data);
 
                         // Construir la URL con parámetros GET
-                        const url = new URL('https://neurofay.app.n8n.cloud/webhook-test/863d7e4b-2454-4028-b2b7-66cc79b2c25b');
+                        const url = new URL('https://neurofay.app.n8n.cloud/webhook/863d7e4b-2454-4028-b2b7-66cc79b2c25b');
                         url.searchParams.append('text', text);
                         url.searchParams.append('serialNumber', serialNumber);
                         url.searchParams.append('timestamp', new Date().toISOString());
