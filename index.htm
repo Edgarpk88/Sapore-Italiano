@@ -77,6 +77,30 @@
             background-color: #e8f5e9;
             color: #2e7d32;
         }
+        .info-blocks {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .info-block {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+        .info-item {
+            margin: 10px 0;
+            font-size: 14px;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #495057;
+        }
+        .info-value {
+            color: #212529;
+            margin-left: 5px;
+        }
     </style>
 </head>
 <body>
@@ -88,7 +112,25 @@
         <button id="scanButton" class="button">Escanear NFC</button>
         <div id="status" class="status"></div>
     </div>
-
+<div id="currentReadBlock" class="info-block">
+                <h3>Lectura actual</h3>
+                <div class="info-item">
+                    <span class="info-label">Nombre:</span>
+                    <span id="currentReadName" class="info-value">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Número Serie:</span>
+                    <span id="currentReadSerial" class="info-value">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Última Visita:</span>
+                    <span id="currentReadTimestamp" class="info-value">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Descuento aplicado:</span>
+                    <span id="currentReadDiscount" class="info-value">50%</span>
+                </div>
+            </div>
     <script>
         const statusElement = document.getElementById('status');
         const scanButton = document.getElementById('scanButton');
