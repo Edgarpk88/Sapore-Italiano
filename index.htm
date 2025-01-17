@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lector NFC</title>
     <style>
+        /* Estilos previos sin cambios */
         body {
             font-family: 'Montserrat', sans-serif;
             margin: 0;
@@ -65,13 +66,13 @@
             padding: 10px;
             background: #f8f9fa;
             border-radius: 8px;
+            flex-direction: column;
+            gap: 10px;
         }
         .register-container.visible {
             display: flex;
-            gap: 10px;
         }
         .register-input {
-            flex-grow: 1;
             padding: 8px;
             border: 1px solid #dee2e6;
             border-radius: 4px;
@@ -138,6 +139,8 @@
         <button id="registerButton" class="button">Registrar</button>
         <div id="registerContainer" class="register-container">
             <input type="text" id="clientName" class="register-input" placeholder="Nombre del cliente">
+            <input type="tel" id="clientPhone" class="register-input" placeholder="Teléfono">
+            <input type="email" id="clientEmail" class="register-input" placeholder="Email">
             <button id="okButton" class="ok-button">OK</button>
         </div>
         <button id="scanButton" class="button">Escanear NFC</button>
@@ -147,6 +150,14 @@
             <div class="info-item">
                 <span class="info-label">Nombre:</span>
                 <span id="currentName" class="info-value">-</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Teléfono:</span>
+                <span id="currentPhone" class="info-value">-</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Email:</span>
+                <span id="currentEmail" class="info-value">-</span>
             </div>
             <div class="info-item">
                 <span class="info-label">Número Serie:</span>
@@ -169,8 +180,12 @@
         const registerButton = document.getElementById('registerButton');
         const registerContainer = document.getElementById('registerContainer');
         const clientNameInput = document.getElementById('clientName');
+        const clientPhoneInput = document.getElementById('clientPhone');
+        const clientEmailInput = document.getElementById('clientEmail');
         const okButton = document.getElementById('okButton');
         const currentName = document.getElementById('currentName');
+        const currentPhone = document.getElementById('currentPhone');
+        const currentEmail = document.getElementById('currentEmail');
         const currentSerial = document.getElementById('currentSerial');
         const currentTimestamp = document.getElementById('currentTimestamp');
         const currentDiscount = document.getElementById('currentDiscount');
@@ -181,10 +196,13 @@
         }
 
         function updateInfoBlock(data) {
-            currentName.textContent = data.text || '-';
+            const parsedData = typeof data.text === 'string' ? JSON.parse(data.text) : data.text;
+            currentName.textContent = parsedData.name || '-';
+            currentPhone.textContent = parsedData.phone || '-';
+            currentEmail.textContent = parsedData.email || '-';
             currentSerial.textContent = data.serialNumber || '-';
             currentTimestamp.textContent = new Date(data.timestamp).toLocaleString() || '-';
-            currentDiscount.textContent = data.text ? '50%' : '-';
+            currentDiscount.textContent = parsedData.name ? '50%' : '-';
         }
 
         function checkNFCAvailability() {
@@ -204,10 +222,20 @@
         });
 
         okButton.addEventListener('click', async () => {
-            if (!clientNameInput.value.trim()) {
-                updateStatus('Por favor, introduce un nombre', true);
+            const name = clientNameInput.value.trim();
+            const phone = clientPhoneInput.value.trim();
+            const email = clientEmailInput.value.trim();
+
+            if (!name || !phone || !email) {
+                updateStatus('Por favor, completa todos los campos', true);
                 return;
             }
+
+            const userData = {
+                name: name,
+                phone: phone,
+                email: email
+            };
 
             try {
                 updateStatus('Acerca el chip NFC para grabar...');
@@ -215,17 +243,19 @@
                 await ndef.write({
                     records: [{
                         recordType: "text",
-                        data: clientNameInput.value
+                        data: JSON.stringify(userData)
                     }]
                 });
                 
-                updateStatus('Nombre grabado correctamente', false);
+                updateStatus('Datos grabados correctamente', false);
                 if ('vibrate' in navigator) {
                     navigator.vibrate(200);
                 }
                 
                 // Limpiar y ocultar el formulario
                 clientNameInput.value = '';
+                clientPhoneInput.value = '';
+                clientEmailInput.value = '';
                 registerContainer.classList.remove('visible');
                 
             } catch (error) {
@@ -256,11 +286,13 @@
                         const text = textDecoder.decode(record.data);
                         const timestamp = new Date().toISOString();
 
-                        updateInfoBlock({
+                        const data = {
                             text: text,
                             serialNumber: serialNumber,
                             timestamp: timestamp
-                        });
+                        };
+
+                        updateInfoBlock(data);
 
                         try {
                             const url = new URL('https://neurofay.app.n8n.cloud/webhook/863d7e4b-2454-4028-b2b7-66cc79b2c25b');
