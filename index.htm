@@ -164,12 +164,14 @@
             <input type="descuento" id="descuentoAplicado" class="register-input" placeholder="Descuento Aplicado">
             <button id="okButton" class="ok-button">OK</button>
         </div>
-        <div id="buscarContainer" class="buscar-container">
-    <input type="text" id="buscarClientName" class="register-input" placeholder="Nombre del cliente">
-    <input type="tel" id="buscarClientPhone" class="register-input" placeholder="Teléfono">
-    <input type="email" id="buscarClientEmail" class="register-input" placeholder="Email">
-    <button id="buscarOkButton" class="ok-button">OK</button>
-</div>
+        <div class="container">
+            <button id="buscarButton" class="button">Buscar</button>
+            <div id="buscarContainer" class="buscar-container">
+                <input type="text" id="clientName" class="register-input" placeholder="Nombre del cliente">
+                <input type="tel" id="clientPhone" class="register-input" placeholder="Teléfono">
+                <input type="email" id="clientEmail" class="register-input" placeholder="Email">
+                <button id="okButton" class="ok-button">OK</button>
+            </div>
         <button id="scanButton" class="button">Escanear NFC</button>
         <div id="status" class="status"></div>
         <div id="infoBlock" class="info-block">
@@ -228,11 +230,7 @@ const registerButton = document.getElementById('registerButton');
 const buscarButton = document.getElementById('buscarButton');
 const registerContainer = document.getElementById('registerContainer');
 const buscarContainer = document.getElementById('buscarContainer');
-// Elementos del formulario de búsqueda
-const buscarNameInput = document.getElementById('buscarClientName');
-const buscarPhoneInput = document.getElementById('buscarClientPhone');
-const buscarEmailInput = document.getElementById('buscarClientEmail');
-const buscarOkButton = document.getElementById('buscarOkButton');
+
 // Elementos del formulario de registro
 const clientNameInput = document.getElementById('clientName');
 const clientPhoneInput = document.getElementById('clientPhone');
@@ -352,8 +350,8 @@ okButton.addEventListener('click', async () => {
     if (!name || !phone || !email || !direccion || !descuento) {
         updateStatus('Por favor, completa todos los campos', true);
         return;
-    });
-        // Manejador de eventos para el botón OK de búsqueda
+    }
+// Manejador de eventos para el botón OK de búsqueda
 buscarOkButton.addEventListener('click', async () => {
     const name = buscarNameInput.value.trim();
     const phone = buscarPhoneInput.value.trim();
@@ -362,7 +360,7 @@ buscarOkButton.addEventListener('click', async () => {
     if (!name && !phone && !email) {
         updateStatus('Por favor, completa al menos un campo de búsqueda', true);
         return;
-    });
+    }
 
     try {
         updateStatus('Buscando cliente...');
