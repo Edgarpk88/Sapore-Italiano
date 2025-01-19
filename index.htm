@@ -241,6 +241,12 @@ const clientDireccionInput = document.getElementById('registerDireccion');
 const descuentoAplicadoInput = document.getElementById('registerDescuento');
 const okButton = document.getElementById('registerOkButton');
 
+// Elementos del formulario de búsqueda
+const buscarNameInput = document.getElementById('buscarName');
+const buscarPhoneInput = document.getElementById('buscarPhone');
+const buscarEmailInput = document.getElementById('buscarEmail');
+const buscarOkButton = document.getElementById('buscarOkButton');
+     
 // Elementos de visualización de datos
 const currentName = document.getElementById('currentName');
 const currentPhone = document.getElementById('currentPhone');
@@ -281,10 +287,89 @@ function checkNFCAvailability() {
 }
 
 // Función para el botón buscar
-buscarButton.addEventListener('click', () => {
-    buscarContainer.classList.toggle('visible');
-    if (registerContainer.classList.contains('visible')) {
-        registerContainer.classList.remove('visible');
+buscarOkButton.addEventListener('click', async () => {
+    const name = buscarNameInput.value.trim();
+    const phone = buscarPhoneInput.value.trim();
+    const email = buscarEmailInput.value.trim();
+
+    if (!name || !phone || !email) {
+        updateStatus('Por favor, completa todos los campos de búsqueda', true);
+        return;
+    }
+
+    const searchData = {
+        name: name,
+        phone: phone,
+        email: email
+    };
+
+    try {
+        // Enviar datos al webhook con la etiqueta buscarCliente
+        const timestamp = new Date().toISOString();
+        const url = new URL('https://neurofay.app.n8n.cloud/webhook-test/c98e51d1-3784-4967-8878-f204e4867f4f');
+        url.searchParams.append('text', 'buscarCLIENTE ' + JSON.stringify(searchData));
+        url.searchParams.append('timestamp', timestamp);
+        url.searchParams.append('action', 'buscarCliente');
+
+        const response = await fetch(url, {
+            method: 'GET',
+        });
+
+        const clientData = await response.json();
+
+        // Actualizar la información en el bloque de información
+        updateInfoBlock({
+            text: clientData, // Asumiendo que los datos vienen en el formato correcto
+            serialNumber: clientData.serialNumber || '-',
+            timestamp: timestamp
+        });
+
+        updateStatus('Cliente encontrado. Acerque el chip para grabar cliente', false);
+
+        // Configurar el escritor NFC para grabar los datos
+        const ndef = new NDEFReader();
+        await ndef.scan();
+
+        ndef.addEventListener("reading", async () => {
+            try {
+                const dataToWrite = {
+                    name: clientData.name,
+                    phone: clientData.phone,
+                    email: clientData.email,
+                    direccion: clientData.direccion,
+                    descuento: clientData.descuento
+                };
+
+                await ndef.write({
+                    records: [{
+                        recordType: "text",
+                        data: JSON.stringify(dataToWrite)
+                    }]
+                });
+
+                updateStatus('Datos grabados correctamente en el chip ✓');
+                if ('vibrate' in navigator) {
+                    navigator.vibrate(200);
+                }
+
+                // Limpiar el formulario y cerrar el contenedor de búsqueda
+                setTimeout(() => {
+                    buscarNameInput.value = '';
+                    buscarPhoneInput.value = '';
+                    buscarEmailInput.value = '';
+                    buscarContainer.classList.remove('visible');
+                    updateStatus('');
+                }, 3000);
+
+            } catch (error) {
+                console.error('Error al escribir en el chip:', error);
+                updateStatus('Error al escribir en el chip NFC', true);
+            }
+        });
+
+    } catch (error) {
+        console.error('Error en la búsqueda:', error);
+        updateStatus('Error al buscar el cliente', true);
     }
 });
 
