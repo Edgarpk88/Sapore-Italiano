@@ -285,7 +285,13 @@ function checkNFCAvailability() {
     updateStatus('Tu dispositivo o navegador no soporta NFC.', true);
     return false;
 }
-
+// Función para el botón buscar
+buscarButton.addEventListener('click', () => {
+    buscarContainer.classList.toggle('visible');
+    if (registerContainer.classList.contains('visible')) {
+        registerContainer.classList.remove('visible');
+    }
+});
 // Función para el botón buscar
 buscarOkButton.addEventListener('click', async () => {
     const name = buscarNameInput.value.trim();
@@ -470,9 +476,10 @@ async function startNFCScan() {
 
     try {
         updateStatus('Iniciando escaneo NFC...');
-        const ndef = new NDEFReader();
-        await ndef.scan();
-        updateStatus('Acerca el chip NFC al dispositivo...');
+await new Promise(resolve => setTimeout(resolve, 2000)); // Añade esta línea
+const ndef = new NDEFReader();
+await ndef.scan();
+updateStatus('Acerca el chip NFC al dispositivo...');
 
         ndef.addEventListener("reading", async ({ message, serialNumber }) => {
             try {
@@ -490,16 +497,19 @@ async function startNFCScan() {
                 updateInfoBlock(data);
 
                 try {
-                    const url = new URL('https://neurofay.app.n8n.cloud/webhook-test/c98e51d1-3784-4967-8878-f204e4867f4f');
-                    url.searchParams.append('text', text);
-                    url.searchParams.append('serialNumber', serialNumber);
-                    url.searchParams.append('timestamp', timestamp);
+                const url = new URL('https://neurofay.app.n8n.cloud/webhook-test/c98e51d1-3784-4967-8878-f204e4867f4f');
+                url.searchParams.append('text', 'actualizarCLIENTE ' + text); // Añadimos la etiqueta
+                url.searchParams.append('serialNumber', serialNumber);
+                url.searchParams.append('timestamp', timestamp);
 
-                    await fetch(url, {
-                        method: 'GET',
-                    });
-                    
-                    updateStatus(`Datos leídos correctamente`, false);
+                const response = await fetch(url, {
+                    method: 'GET',
+              });
+    
+                const clientData = await response.json(); // Obtenemos la respuesta
+                updateInfoBlock({text: clientData}); // Actualizamos con los datos nuevos
+    
+                    updateStatus(`Datos actualizados correctamente`, false);
                     if ('vibrate' in navigator) {
                         navigator.vibrate(200);
                     }
