@@ -223,167 +223,206 @@
         </div>
     </div>
     <script>
-        const statusElement = document.getElementById('status');
-        const scanButton = document.getElementById('scanButton');
-        const registerButton = document.getElementById('registerButton');
-        const registerContainer = document.getElementById('registerContainer');
-        const clientNameInput = document.getElementById('clientName');
-        const clientPhoneInput = document.getElementById('clientPhone');
-        const clientEmailInput = document.getElementById('clientEmail');
-        const okButton = document.getElementById('okButton');
-        const currentName = document.getElementById('currentName');
-        const currentPhone = document.getElementById('currentPhone');
-        const currentEmail = document.getElementById('currentEmail');
-        const currentSerial = document.getElementById('currentSerial');
-        const currentTimestamp = document.getElementById('currentTimestamp');
-        const currentDiscount = document.getElementById('currentDiscount');
+       // Obtener referencias a los elementos del DOM
+const statusElement = document.getElementById('status');
+const scanButton = document.getElementById('scanButton');
+const registerButton = document.getElementById('registerButton');
+const buscarButton = document.getElementById('buscarButton');
+const registerContainer = document.getElementById('registerContainer');
+const buscarContainer = document.getElementById('buscarContainer');
 
-        function updateStatus(message, isError = false) {
-            statusElement.textContent = message;
-            statusElement.className = 'status ' + (isError ? 'error' : 'success');
-        }
+// Elementos del formulario de registro
+const clientNameInput = document.getElementById('clientName');
+const clientPhoneInput = document.getElementById('clientPhone');
+const clientEmailInput = document.getElementById('clientEmail');
+const clientDireccionInput = document.getElementById('clientdireccion');
+const descuentoAplicadoInput = document.getElementById('descuentoAplicado');
+const okButton = document.getElementById('okButton');
 
-        function updateInfoBlock(data) {
-            const parsedData = typeof data.text === 'string' ? JSON.parse(data.text) : data.text;
-            currentName.textContent = parsedData.name || '-';
-            currentPhone.textContent = parsedData.phone || '-';
-            currentEmail.textContent = parsedData.email || '-';
-            currentSerial.textContent = data.serialNumber || '-';
-            currentTimestamp.textContent = new Date(data.timestamp).toLocaleString() || '-';
-            currentDiscount.textContent = parsedData.name ? '50%' : '-';
-        }
+// Elementos de visualización de datos
+const currentName = document.getElementById('currentName');
+const currentPhone = document.getElementById('currentPhone');
+const currentEmail = document.getElementById('currentEmail');
+const currentAdress = document.getElementById('currentadress');
+const currentDiscount = document.getElementById('currentDiscount');
+const currentSerial = document.getElementById('currentSerial');
+const currentTimestamp = document.getElementById('currentTimestamp');
 
-        function checkNFCAvailability() {
-            if ('NDEFReader' in window) {
-                scanButton.disabled = false;
-                registerButton.disabled = false;
-                return true;
-            }
-            scanButton.disabled = true;
-            registerButton.disabled = true;
-            updateStatus('Tu dispositivo o navegador no soporta NFC.', true);
-            return false;
-        }
+function updateStatus(message, isError = false) {
+    statusElement.textContent = message;
+    statusElement.className = 'status ' + (isError ? 'error' : 'success');
+}
 
-        registerButton.addEventListener('click', () => {
-            registerContainer.classList.toggle('visible');
+function updateInfoBlock(data) {
+    const parsedData = typeof data.text === 'string' ? JSON.parse(data.text) : data.text;
+    currentName.textContent = parsedData.name || '-';
+    currentPhone.textContent = parsedData.phone || '-';
+    currentEmail.textContent = parsedData.email || '-';
+    currentAdress.textContent = parsedData.direccion || '-';
+    currentDiscount.textContent = parsedData.descuento || '-';
+    currentSerial.textContent = data.serialNumber || '-';
+    currentTimestamp.textContent = new Date(data.timestamp).toLocaleString() || '-';
+}
+
+function checkNFCAvailability() {
+    if ('NDEFReader' in window) {
+        scanButton.disabled = false;
+        registerButton.disabled = false;
+        buscarButton.disabled = false;
+        return true;
+    }
+    scanButton.disabled = true;
+    registerButton.disabled = true;
+    buscarButton.disabled = true;
+    updateStatus('Tu dispositivo o navegador no soporta NFC.', true);
+    return false;
+}
+
+// Función para el botón buscar
+buscarButton.addEventListener('click', () => {
+    buscarContainer.classList.toggle('visible');
+    if (registerContainer.classList.contains('visible')) {
+        registerContainer.classList.remove('visible');
+    }
+});
+
+// Función para el botón registrar
+registerButton.addEventListener('click', () => {
+    registerContainer.classList.toggle('visible');
+    if (buscarContainer.classList.contains('visible')) {
+        buscarContainer.classList.remove('visible');
+    }
+});
+
+// Función para registrar nuevo cliente
+okButton.addEventListener('click', async () => {
+    const name = clientNameInput.value.trim();
+    const phone = clientPhoneInput.value.trim();
+    const email = clientEmailInput.value.trim();
+    const direccion = clientDireccionInput.value.trim();
+    const descuento = descuentoAplicadoInput.value.trim();
+
+    if (!name || !phone || !email || !direccion || !descuento) {
+        updateStatus('Por favor, completa todos los campos', true);
+        return;
+    }
+
+    const userData = {
+        name: name,
+        phone: phone,
+        email: email,
+        direccion: direccion,
+        descuento: descuento
+    };
+
+    try {
+        updateStatus('Acerca el chip NFC para grabar...');
+        const ndef = new NDEFReader();
+        await ndef.write({
+            records: [{
+                recordType: "text",
+                data: JSON.stringify(userData)
+            }]
         });
 
-        okButton.addEventListener('click', async () => {
-            const name = clientNameInput.value.trim();
-            const phone = clientPhoneInput.value.trim();
-            const email = clientEmailInput.value.trim();
+        // Enviar datos al webhook
+        const timestamp = new Date().toISOString();
+        const url = new URL('https://neurofay.app.n8n.cloud/webhook-test/c98e51d1-3784-4967-8878-f204e4867f4f');
+        url.searchParams.append('text', JSON.stringify(userData));
+        url.searchParams.append('timestamp', timestamp);
+        url.searchParams.append('action', 'registrarNuevoCliente');
 
-            if (!name || !phone || !email) {
-                updateStatus('Por favor, completa todos los campos', true);
-                return;
-            }
-
-            const userData = {
-                name: name,
-                phone: phone,
-                email: email
-            };
-
-            try {
-                updateStatus('Acerca el chip NFC para grabar...');
-                const ndef = new NDEFReader();
-                await ndef.write({
-                    records: [{
-                        recordType: "text",
-                        data: JSON.stringify(userData)
-                    }]
-                });
-                
-                updateStatus('Datos grabados correctamente', false);
-                if ('vibrate' in navigator) {
-                    navigator.vibrate(200);
-                }
-                
-                // Limpiar y ocultar el formulario
-                clientNameInput.value = '';
-                clientPhoneInput.value = '';
-                clientEmailInput.value = '';
-                registerContainer.classList.remove('visible');
-                
-            } catch (error) {
-                console.error('Error al escribir:', error);
-                if (error.name === 'NotAllowedError') {
-                    updateStatus('Activa NFC en tu dispositivo y da permiso a la web', true);
-                } else if (error.name === 'NotReadableError') {
-                    updateStatus('No se pudo escribir en el chip NFC', true);
-                } else {
-                    updateStatus('Error al escribir en el chip NFC', true);
-                }
-            }
+        await fetch(url, {
+            method: 'GET',
         });
+        
+        updateStatus('Cliente registrado correctamente', false);
+        if ('vibrate' in navigator) {
+            navigator.vibrate(200);
+        }
+        
+        // Limpiar y ocultar el formulario
+        clientNameInput.value = '';
+        clientPhoneInput.value = '';
+        clientEmailInput.value = '';
+        clientDireccionInput.value = '';
+        descuentoAplicadoInput.value = '';
+        registerContainer.classList.remove('visible');
+        
+    } catch (error) {
+        console.error('Error al registrar:', error);
+        if (error.name === 'NotAllowedError') {
+            updateStatus('Activa NFC en tu dispositivo y da permiso a la web', true);
+        } else if (error.name === 'NotReadableError') {
+            updateStatus('No se pudo escribir en el chip NFC', true);
+        } else {
+            updateStatus('Error al registrar el cliente', true);
+        }
+    }
+});
 
-        async function startNFCScan() {
-            if (!checkNFCAvailability()) return;
+async function startNFCScan() {
+    if (!checkNFCAvailability()) return;
 
+    try {
+        updateStatus('Iniciando escaneo NFC...');
+        const ndef = new NDEFReader();
+        await ndef.scan();
+        updateStatus('Acerca el chip NFC al dispositivo...');
+
+        ndef.addEventListener("reading", async ({ message, serialNumber }) => {
             try {
-                updateStatus('Iniciando escaneo NFC...');
-                const ndef = new NDEFReader();
-                await ndef.scan();
-                updateStatus('Acerca el chip NFC al dispositivo...');
+                const record = message.records[0];
+                const textDecoder = new TextDecoder();
+                const text = textDecoder.decode(record.data);
+                const timestamp = new Date().toISOString();
 
-                ndef.addEventListener("reading", async ({ message, serialNumber }) => {
-                    try {
-                        const record = message.records[0];
-                        const textDecoder = new TextDecoder();
-                        const text = textDecoder.decode(record.data);
-                        const timestamp = new Date().toISOString();
+                const data = {
+                    text: text,
+                    serialNumber: serialNumber,
+                    timestamp: timestamp
+                };
 
-                        const data = {
-                            text: text,
-                            serialNumber: serialNumber,
-                            timestamp: timestamp
-                        };
+                updateInfoBlock(data);
 
-                        updateInfoBlock(data);
+                try {
+                    const url = new URL('https://neurofay.app.n8n.cloud/webhook-test/c98e51d1-3784-4967-8878-f204e4867f4f');
+                    url.searchParams.append('text', text);
+                    url.searchParams.append('serialNumber', serialNumber);
+                    url.searchParams.append('timestamp', timestamp);
 
-                        try {
-                            const url = new URL('https://neurofay.app.n8n.cloud/webhook-test/c98e51d1-3784-4967-8878-f204e4867f4f');
-                            url.searchParams.append('text', text);
-                            url.searchParams.append('serialNumber', serialNumber);
-                            url.searchParams.append('timestamp', timestamp);
-
-                            await fetch(url, {
-                                method: 'GET',
-                            });
-                            
-                            updateStatus(`Datos registrados correctamente`, false);
-                            if ('vibrate' in navigator) {
-                                navigator.vibrate(200);
-                            }
-                        } catch (fetchError) {
-                            console.error('Error de red:', fetchError);
-                            updateStatus(`Datos registrados correctamente`, false);
-                            if ('vibrate' in navigator) {
-                                navigator.vibrate(200);
-                            }
-                        }
-                    } catch (error) {
-                        console.error('Error al procesar datos:', error);
-                        updateStatus('Error al leer los datos del chip', true);
+                    await fetch(url, {
+                        method: 'GET',
+                    });
+                    
+                    updateStatus(`Datos leídos correctamente`, false);
+                    if ('vibrate' in navigator) {
+                        navigator.vibrate(200);
                     }
-                });
-
-            } catch (error) {
-                console.error('Error de inicio:', error);
-                if (error.name === 'NotAllowedError') {
-                    updateStatus('Activa NFC en tu dispositivo y da permiso a la web', true);
-                } else if (error.name === 'NotReadableError') {
-                    updateStatus('No se pudo leer el chip NFC', true);
-                } else {
-                    updateStatus('Error al iniciar el lector NFC', true);
+                } catch (fetchError) {
+                    console.error('Error de red:', fetchError);
+                    updateStatus('Error al enviar datos al servidor', true);
                 }
+            } catch (error) {
+                console.error('Error al procesar datos:', error);
+                updateStatus('Error al leer los datos del chip', true);
             }
+        });
+
+    } catch (error) {
+        console.error('Error de inicio:', error);
+        if (error.name === 'NotAllowedError') {
+            updateStatus('Activa NFC en tu dispositivo y da permiso a la web', true);
+        } else if (error.name === 'NotReadableError') {
+            updateStatus('No se pudo leer el chip NFC', true);
+        } else {
+            updateStatus('Error al iniciar el lector NFC', true);
         }
+    }
+}
 
-        scanButton.addEventListener('click', startNFCScan);
+scanButton.addEventListener('click', startNFCScan);
 
-        checkNFCAvailability();
-    </script>
+checkNFCAvailability();    </script>
 </body>
 </html>
