@@ -492,7 +492,7 @@ async function startNFCScan() {
                         method: 'GET',
                     });
                     
-                    updateStatus(Datos leídos correctamente, false);
+                    updateStatus(`Datos leídos correctamente`, false);
                     if ('vibrate' in navigator) {
                         navigator.vibrate(200);
                     }
