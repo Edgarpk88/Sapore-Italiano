@@ -239,11 +239,6 @@ const clientDireccionInput = document.getElementById('clientdireccion');
 const descuentoAplicadoInput = document.getElementById('descuentoAplicado');
 const okButton = document.getElementById('okButton');
 
-const buscarNameInput = document.querySelector('#buscarContainer #clientName');
-const buscarPhoneInput = document.querySelector('#buscarContainer #clientPhone');
-const buscarEmailInput = document.querySelector('#buscarContainer #clientEmail');
-const buscarOkButton = document.querySelector('#buscarContainer #okButton');
-
 // Elementos de visualización de datos
 const currentName = document.getElementById('currentName');
 const currentPhone = document.getElementById('currentPhone');
@@ -268,47 +263,7 @@ function updateInfoBlock(data) {
     currentSerial.textContent = data.serialNumber || '-';
     currentTimestamp.textContent = new Date(data.timestamp).toLocaleString() || '-';
 }
-// Función para procesar la respuesta de búsqueda y actualizar la interfaz
-async function processBusquedaResponse(responseData) {
-    try {
-        // Parsear la respuesta si es necesario
-        const data = typeof responseData === 'string' ? JSON.parse(responseData) : responseData;
-        
-        // Actualizar el bloque de información
-        updateInfoBlock({
-            text: data,
-            serialNumber: data.serialNumber || '-',
-            timestamp: new Date().toISOString()
-        });
-        
-        // Actualizar estado
-        updateStatus('Cliente encontrado. Acerca el chip NFC para actualizar...', false);
-        
-        // Preparar para escritura NFC
-        const ndef = new NDEFReader();
-        await ndef.write({
-            records: [{
-                recordType: "text",
-                data: JSON.stringify({
-                    name: data.name,
-                    phone: data.phone,
-                    email: data.email,
-                    direccion: data.direccion,
-                    descuento: data.descuento
-                })
-            }]
-        });
-        
-        updateStatus('Chip actualizado correctamente', false);
-        if ('vibrate' in navigator) {
-            navigator.vibrate(200);
-        }
-        
-    } catch (error) {
-        console.error('Error al procesar la búsqueda:', error);
-        updateStatus('Error al procesar los datos del cliente', true);
-    }
-}
+
 function checkNFCAvailability() {
     if ('NDEFReader' in window) {
         scanButton.disabled = false;
@@ -351,57 +306,7 @@ okButton.addEventListener('click', async () => {
         updateStatus('Por favor, completa todos los campos', true);
         return;
     }
-// Manejador de eventos para el botón OK de búsqueda
-buscarOkButton.addEventListener('click', async () => {
-    const name = buscarNameInput.value.trim();
-    const phone = buscarPhoneInput.value.trim();
-    const email = buscarEmailInput.value.trim();
 
-    if (!name && !phone && !email) {
-        updateStatus('Por favor, completa al menos un campo de búsqueda', true);
-        return;
-    }
-
-    try {
-        updateStatus('Buscando cliente...');
-        
-        // Crear URL para la búsqueda
-        const url = new URL('https://neurofay.app.n8n.cloud/webhook-test/c98e51d1-3784-4967-8878-f204e4867f4f');
-        url.searchParams.append('name', name);
-        url.searchParams.append('phone', phone);
-        url.searchParams.append('email', email);
-        url.searchParams.append('action', 'buscarCliente');
-        
-        // Realizar la búsqueda
-        const response = await fetch(url, {
-            method: 'GET'
-        });
-        
-        if (!response.ok) {
-            throw new Error('Error en la respuesta del servidor');
-        }
-        
-        const data = await response.json();
-        
-        if (!data) {
-            updateStatus('Cliente no encontrado', true);
-            return;
-        }
-        
-        // Procesar la respuesta
-        await processBusquedaResponse(data);
-        
-        // Limpiar y ocultar el formulario
-        buscarNameInput.value = '';
-        buscarPhoneInput.value = '';
-        buscarEmailInput.value = '';
-        buscarContainer.classList.remove('visible');
-        
-    } catch (error) {
-        console.error('Error en la búsqueda:', error);
-        updateStatus('Error al buscar el cliente', true);
-    }
-});
     const userData = {
         name: name,
         phone: phone,
