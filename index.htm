@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lector NFC</title>
+    <title>Lector NFC BOCADITO</title>
     <style>
         /* Estilos previos sin cambios */
         body {
@@ -23,15 +23,16 @@
         .main-title {
             font-family: 'Playfair Display', serif;
             font-size: 2.5em;
-            color: #dc2626;
+            color: #5393e6;
             margin: 0;
+            letter-spacing: 0.5em;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
         }
         .subtitle {
             font-size: 1.2em;
             color: #1a1a1a;
             margin: 5px 0 0 0;
-            letter-spacing: 0.5em;
+            letter-spacing: -0.05em;
             text-transform: uppercase;
         }
         .container {
@@ -43,7 +44,7 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .button {
-            background-color: #d40505;
+            background-color: #251fd4;
             border: none;
             color: white;
             padding: 16px;
@@ -57,7 +58,7 @@
             transition: background-color 0.3s;
         }
         .button:disabled {
-            background-color: #e25d56;
+            background-color: #567be2;
             cursor: not-allowed;
         }
         .register-container {
@@ -72,14 +73,32 @@
         .register-container.visible {
             display: flex;
         }
+        .buscar-container {
+            display: none;
+            margin: 10px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .buscar-container.visible {
+            display: flex;
+        }
         .register-input {
             padding: 8px;
             border: 1px solid #dee2e6;
             border-radius: 4px;
             font-size: 16px;
         }
+        .buscar-input {
+            padding: 8px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            font-size: 16px;
+        }
         .ok-button {
-            background-color: #28a745;
+            background-color: #12dde1;
             color: white;
             border: none;
             padding: 8px 16px;
@@ -132,8 +151,8 @@
 </head>
 <body>
     <div class="title-container">
-        <h1 class="main-title">Sapore Italiano</h1>
-        <h2 class="subtitle">Restaurante</h2>
+        <h1 class="main-title">BOCADITO</h1>
+        <h2 class="subtitle">Pasión por los Bocadillos</h2>
     </div>
     <div class="container">
         <button id="registerButton" class="button">Registrar</button>
@@ -141,8 +160,18 @@
             <input type="text" id="clientName" class="register-input" placeholder="Nombre del cliente">
             <input type="tel" id="clientPhone" class="register-input" placeholder="Teléfono">
             <input type="email" id="clientEmail" class="register-input" placeholder="Email">
+            <input type="direccion" id="clientdireccion" class="register-input" placeholder="Dirección">
+            <input type="descuento" id="descuentoAplicado" class="register-input" placeholder="Descuento Aplicado">
             <button id="okButton" class="ok-button">OK</button>
         </div>
+        <div class="container">
+            <button id="buscarButton" class="button">Buscar</button>
+            <div id="buscarContainer" class="buscar-container">
+                <input type="text" id="clientName" class="register-input" placeholder="Nombre del cliente">
+                <input type="tel" id="clientPhone" class="register-input" placeholder="Teléfono">
+                <input type="email" id="clientEmail" class="register-input" placeholder="Email">
+                <button id="okButton" class="ok-button">OK</button>
+            </div>
         <button id="scanButton" class="button">Escanear NFC</button>
         <div id="status" class="status"></div>
         <div id="infoBlock" class="info-block">
@@ -160,20 +189,39 @@
                 <span id="currentEmail" class="info-value">-</span>
             </div>
             <div class="info-item">
-                <span class="info-label">Número Serie:</span>
-                <span id="currentSerial" class="info-value">-</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">Última Visita:</span>
-                <span id="currentTimestamp" class="info-value">-</span>
+                <span class="info-label">Dirección:</span>
+                <span id="currentadress" class="info-value">-</span>
             </div>
             <div class="info-item">
                 <span class="info-label">Descuento aplicado:</span>
                 <span id="currentDiscount" class="info-value">-</span>
             </div>
+            <div class="info-item">
+                <span class="info-label">Clasificación:</span>
+                <span id="currentclasificacion" class="info-value">-</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Puntos Cliente:</span>
+                <span id="currentPuntos" class="info-value">-</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Numero de Visitas:</span>
+                <span id="currentvisitas" class="info-value">-</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Número Serie:</span>
+                <span id="currentSerial" class="info-value">-</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Número Cliente:</span>
+                <span id="currentnumerocliente" class="info-value">-</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Última Visita:</span>
+                <span id="currentTimestamp" class="info-value">-</span>
+            </div>
         </div>
     </div>
-
     <script>
         const statusElement = document.getElementById('status');
         const scanButton = document.getElementById('scanButton');
@@ -295,7 +343,7 @@
                         updateInfoBlock(data);
 
                         try {
-                            const url = new URL('https://neurofay.app.n8n.cloud/webhook/863d7e4b-2454-4028-b2b7-66cc79b2c25b');
+                            const url = new URL('https://neurofay.app.n8n.cloud/webhook-test/c98e51d1-3784-4967-8878-f204e4867f4f');
                             url.searchParams.append('text', text);
                             url.searchParams.append('serialNumber', serialNumber);
                             url.searchParams.append('timestamp', timestamp);
