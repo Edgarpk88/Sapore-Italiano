@@ -3,136 +3,523 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Formulario Compacto</title>
+    <title>Lector NFC BOCADITO</title>
     <style>
+        /* Estilos previos sin cambios */
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Montserrat', sans-serif;
             margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f4f4f9;
-        }
-
-        .container {
-            background: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             padding: 20px;
-            width: 100%;
-            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f5f5f5;
+        }
+        .title-container {
             text-align: center;
+            margin-bottom: 30px;
         }
-
-        h1 {
-            font-size: 1.5rem;
-            color: #333333;
+        .main-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5em;
+            color: #5393e6;
+            margin: 0;
+            letter-spacing: 0.5em;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
         }
-
-        input[type="text"], input[type="password"] {
+        .subtitle {
+            font-size: 1.2em;
+            color: #1a1a1a;
+            margin: 5px 0 0 0;
+            letter-spacing: -0.05em;
+            text-transform: uppercase;
+        }
+        .container {
+            max-width: 600px;
             width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-sizing: border-box;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-
-        button {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
+        .button {
+            background-color: #251fd4;
             border: none;
-            border-radius: 5px;
+            color: white;
+            padding: 16px;
+            width: 100%;
+            text-align: center;
+            text-decoration: none;
+            font-size: 18px;
+            margin: 4px 0;
             cursor: pointer;
-            font-size: 1rem;
+            border-radius: 8px;
+            transition: background-color 0.3s;
         }
-
-        .btn-primary {
-            background-color: #007bff;
-            color: white;
+        .button:disabled {
+            background-color: #567be2;
+            cursor: not-allowed;
         }
-
-        .btn-secondary {
-            background-color: #6c757d;
-            color: white;
-        }
-
-        .btn-success {
-            background-color: #28a745;
-            color: white;
-        }
-
-        .panel {
-            margin-top: 20px;
+        .register-container {
+            display: none;
+            margin: 10px 0;
             padding: 10px;
-            background: #f9f9f9;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            text-align: left;
+            background: #f8f9fa;
+            border-radius: 8px;
+            flex-direction: column;
+            gap: 10px;
         }
-
-        .panel h2 {
-            font-size: 1.2rem;
-            margin-bottom: 10px;
-            color: #555;
+        .register-container.visible {
+            display: flex;
         }
-
-        .panel p {
-            margin: 5px 0;
-            color: #666;
+        .buscar-container {
+            display: none;
+            margin: 10px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .buscar-container.visible {
+            display: flex;
+        }
+        .register-input {
+            padding: 8px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .buscar-input {
+            padding: 8px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .ok-button {
+            background-color: #12dde1;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 16px;
+            border-radius: 8px;
+            width: 100%;
+            text-align: center;
+            font-size: 16px;
+        }
+        .error {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+        .success {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+        .info-block {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            margin-top: 20px;
+        }
+        .info-item {
+            margin: 10px 0;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #495057;
+        }
+        .info-value {
+            color: #212529;
         }
     </style>
 </head>
 <body>
+    <div class="title-container">
+        <h1 class="main-title">BOCADITO</h1>
+        <h2 class="subtitle">Pasión por los Bocadillos</h2>
+    </div>
     <div class="container">
-        <h1>Formulario de Registro</h1>
-
-        <!-- Campo de usuario -->
-        <input type="text" id="usuario" placeholder="Nombre de usuario">
-
-        <!-- Campo de contraseña -->
-        <input type="password" id="contraseña" placeholder="Contraseña">
-
-        <!-- Botón de registrar -->
-        <button class="btn-primary" onclick="registrar()">Registrar</button>
-
-        <!-- Botón de escanear NFC -->
-        <button class="btn-secondary" onclick="escanearNFC()">Escanear NFC</button>
-
-        <!-- Panel para mostrar datos -->
-        <div class="panel" id="panel-datos" style="display: none;">
-            <h2>Datos del Usuario</h2>
-            <p><strong>Usuario:</strong> <span id="dato-usuario"></span></p>
-            <p><strong>Contraseña:</strong> <span id="dato-contraseña"></span></p>
-            <p><strong>NFC:</strong> <span id="dato-nfc"></span></p>
+        <button id="registerButton" class="button">Registrar</button>
+        <div id="registerContainer" class="register-container">
+            <input type="text" id="clientName" class="register-input" placeholder="Nombre del cliente">
+            <input type="tel" id="clientPhone" class="register-input" placeholder="Teléfono">
+            <input type="email" id="clientEmail" class="register-input" placeholder="Email">
+            <input type="direccion" id="clientdireccion" class="register-input" placeholder="Dirección">
+            <input type="descuento" id="descuentoAplicado" class="register-input" placeholder="Descuento Aplicado">
+            <button id="okButton" class="ok-button">OK</button>
+        </div>
+        <div id="buscarContainer" class="buscar-container">
+    <input type="text" id="buscarClientName" class="register-input" placeholder="Nombre del cliente">
+    <input type="tel" id="buscarClientPhone" class="register-input" placeholder="Teléfono">
+    <input type="email" id="buscarClientEmail" class="register-input" placeholder="Email">
+    <button id="buscarOkButton" class="ok-button">OK</button>
+</div>
+        <button id="scanButton" class="button">Escanear NFC</button>
+        <div id="status" class="status"></div>
+        <div id="infoBlock" class="info-block">
+            <h3>Lectura actual</h3>
+            <div class="info-item">
+                <span class="info-label">Nombre:</span>
+                <span id="currentName" class="info-value">-</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Teléfono:</span>
+                <span id="currentPhone" class="info-value">-</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Email:</span>
+                <span id="currentEmail" class="info-value">-</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Dirección:</span>
+                <span id="currentadress" class="info-value">-</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Descuento aplicado:</span>
+                <span id="currentDiscount" class="info-value">-</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Clasificación:</span>
+                <span id="currentclasificacion" class="info-value">-</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Puntos Cliente:</span>
+                <span id="currentPuntos" class="info-value">-</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Numero de Visitas:</span>
+                <span id="currentvisitas" class="info-value">-</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Número Serie:</span>
+                <span id="currentSerial" class="info-value">-</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Número Cliente:</span>
+                <span id="currentnumerocliente" class="info-value">-</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Última Visita:</span>
+                <span id="currentTimestamp" class="info-value">-</span>
+            </div>
         </div>
     </div>
-
     <script>
-        function registrar() {
-            const usuario = document.getElementById('usuario').value;
-            const contraseña = document.getElementById('contraseña').value;
+       // Obtener referencias a los elementos del DOM
+const statusElement = document.getElementById('status');
+const scanButton = document.getElementById('scanButton');
+const registerButton = document.getElementById('registerButton');
+const buscarButton = document.getElementById('buscarButton');
+const registerContainer = document.getElementById('registerContainer');
+const buscarContainer = document.getElementById('buscarContainer');
+// Elementos del formulario de búsqueda
+const buscarNameInput = document.getElementById('buscarClientName');
+const buscarPhoneInput = document.getElementById('buscarClientPhone');
+const buscarEmailInput = document.getElementById('buscarClientEmail');
+const buscarOkButton = document.getElementById('buscarOkButton');
+// Elementos del formulario de registro
+const clientNameInput = document.getElementById('clientName');
+const clientPhoneInput = document.getElementById('clientPhone');
+const clientEmailInput = document.getElementById('clientEmail');
+const clientDireccionInput = document.getElementById('clientdireccion');
+const descuentoAplicadoInput = document.getElementById('descuentoAplicado');
+const okButton = document.getElementById('okButton');
 
-            if (usuario && contraseña) {
-                document.getElementById('dato-usuario').textContent = usuario;
-                document.getElementById('dato-contraseña').textContent = contraseña;
-                document.getElementById('panel-datos').style.display = 'block';
-                alert('Usuario registrado correctamente.');
-            } else {
-                alert('Por favor, complete todos los campos.');
+const buscarNameInput = document.querySelector('#buscarContainer #clientName');
+const buscarPhoneInput = document.querySelector('#buscarContainer #clientPhone');
+const buscarEmailInput = document.querySelector('#buscarContainer #clientEmail');
+const buscarOkButton = document.querySelector('#buscarContainer #okButton');
+
+// Elementos de visualización de datos
+const currentName = document.getElementById('currentName');
+const currentPhone = document.getElementById('currentPhone');
+const currentEmail = document.getElementById('currentEmail');
+const currentAdress = document.getElementById('currentadress');
+const currentDiscount = document.getElementById('currentDiscount');
+const currentSerial = document.getElementById('currentSerial');
+const currentTimestamp = document.getElementById('currentTimestamp');
+
+function updateStatus(message, isError = false) {
+    statusElement.textContent = message;
+    statusElement.className = 'status ' + (isError ? 'error' : 'success');
+}
+
+function updateInfoBlock(data) {
+    const parsedData = typeof data.text === 'string' ? JSON.parse(data.text) : data.text;
+    currentName.textContent = parsedData.name || '-';
+    currentPhone.textContent = parsedData.phone || '-';
+    currentEmail.textContent = parsedData.email || '-';
+    currentAdress.textContent = parsedData.direccion || '-';
+    currentDiscount.textContent = parsedData.descuento || '-';
+    currentSerial.textContent = data.serialNumber || '-';
+    currentTimestamp.textContent = new Date(data.timestamp).toLocaleString() || '-';
+}
+// Función para procesar la respuesta de búsqueda y actualizar la interfaz
+async function processBusquedaResponse(responseData) {
+    try {
+        // Parsear la respuesta si es necesario
+        const data = typeof responseData === 'string' ? JSON.parse(responseData) : responseData;
+        
+        // Actualizar el bloque de información
+        updateInfoBlock({
+            text: data,
+            serialNumber: data.serialNumber || '-',
+            timestamp: new Date().toISOString()
+        });
+        
+        // Actualizar estado
+        updateStatus('Cliente encontrado. Acerca el chip NFC para actualizar...', false);
+        
+        // Preparar para escritura NFC
+        const ndef = new NDEFReader();
+        await ndef.write({
+            records: [{
+                recordType: "text",
+                data: JSON.stringify({
+                    name: data.name,
+                    phone: data.phone,
+                    email: data.email,
+                    direccion: data.direccion,
+                    descuento: data.descuento
+                })
+            }]
+        });
+        
+        updateStatus('Chip actualizado correctamente', false);
+        if ('vibrate' in navigator) {
+            navigator.vibrate(200);
+        }
+        
+    } catch (error) {
+        console.error('Error al procesar la búsqueda:', error);
+        updateStatus('Error al procesar los datos del cliente', true);
+    }
+}
+function checkNFCAvailability() {
+    if ('NDEFReader' in window) {
+        scanButton.disabled = false;
+        registerButton.disabled = false;
+        buscarButton.disabled = false;
+        return true;
+    }
+    scanButton.disabled = true;
+    registerButton.disabled = true;
+    buscarButton.disabled = true;
+    updateStatus('Tu dispositivo o navegador no soporta NFC.', true);
+    return false;
+}
+
+// Función para el botón buscar
+buscarButton.addEventListener('click', () => {
+    buscarContainer.classList.toggle('visible');
+    if (registerContainer.classList.contains('visible')) {
+        registerContainer.classList.remove('visible');
+    }
+});
+
+// Función para el botón registrar
+registerButton.addEventListener('click', () => {
+    registerContainer.classList.toggle('visible');
+    if (buscarContainer.classList.contains('visible')) {
+        buscarContainer.classList.remove('visible');
+    }
+});
+
+// Función para registrar nuevo cliente
+okButton.addEventListener('click', async () => {
+    const name = clientNameInput.value.trim();
+    const phone = clientPhoneInput.value.trim();
+    const email = clientEmailInput.value.trim();
+    const direccion = clientDireccionInput.value.trim();
+    const descuento = descuentoAplicadoInput.value.trim();
+
+    if (!name || !phone || !email || !direccion || !descuento) {
+        updateStatus('Por favor, completa todos los campos', true);
+        return;
+    });
+        // Manejador de eventos para el botón OK de búsqueda
+buscarOkButton.addEventListener('click', async () => {
+    const name = buscarNameInput.value.trim();
+    const phone = buscarPhoneInput.value.trim();
+    const email = buscarEmailInput.value.trim();
+
+    if (!name && !phone && !email) {
+        updateStatus('Por favor, completa al menos un campo de búsqueda', true);
+        return;
+    });
+
+    try {
+        updateStatus('Buscando cliente...');
+        
+        // Crear URL para la búsqueda
+        const url = new URL('https://neurofay.app.n8n.cloud/webhook-test/c98e51d1-3784-4967-8878-f204e4867f4f');
+        url.searchParams.append('name', name);
+        url.searchParams.append('phone', phone);
+        url.searchParams.append('email', email);
+        url.searchParams.append('action', 'buscarCliente');
+        
+        // Realizar la búsqueda
+        const response = await fetch(url, {
+            method: 'GET'
+        });
+        
+        if (!response.ok) {
+            throw new Error('Error en la respuesta del servidor');
+        }
+        
+        const data = await response.json();
+        
+        if (!data) {
+            updateStatus('Cliente no encontrado', true);
+            return;
+        }
+        
+        // Procesar la respuesta
+        await processBusquedaResponse(data);
+        
+        // Limpiar y ocultar el formulario
+        buscarNameInput.value = '';
+        buscarPhoneInput.value = '';
+        buscarEmailInput.value = '';
+        buscarContainer.classList.remove('visible');
+        
+    } catch (error) {
+        console.error('Error en la búsqueda:', error);
+        updateStatus('Error al buscar el cliente', true);
+    }
+});
+    const userData = {
+        name: name,
+        phone: phone,
+        email: email,
+        direccion: direccion,
+        descuento: descuento
+    };
+
+    try {
+        updateStatus('Acerca el chip NFC para grabar...');
+        const ndef = new NDEFReader();
+        await ndef.write({
+            records: [{
+                recordType: "text",
+                data: JSON.stringify(userData)
+            }]
+        });
+
+        // Enviar datos al webhook
+        const timestamp = new Date().toISOString();
+        const url = new URL('https://neurofay.app.n8n.cloud/webhook-test/c98e51d1-3784-4967-8878-f204e4867f4f');
+        url.searchParams.append('text', JSON.stringify(userData));
+        url.searchParams.append('timestamp', timestamp);
+        url.searchParams.append('action', 'registrarNuevoCliente');
+
+        await fetch(url, {
+            method: 'GET',
+        });
+        
+        updateStatus('Cliente registrado correctamente', false);
+        if ('vibrate' in navigator) {
+            navigator.vibrate(200);
+        }
+        
+        // Limpiar y ocultar el formulario
+        clientNameInput.value = '';
+        clientPhoneInput.value = '';
+        clientEmailInput.value = '';
+        clientDireccionInput.value = '';
+        descuentoAplicadoInput.value = '';
+        registerContainer.classList.remove('visible');
+        
+    } catch (error) {
+        console.error('Error al registrar:', error);
+        if (error.name === 'NotAllowedError') {
+            updateStatus('Activa NFC en tu dispositivo y da permiso a la web', true);
+        } else if (error.name === 'NotReadableError') {
+            updateStatus('No se pudo escribir en el chip NFC', true);
+        } else {
+            updateStatus('Error al registrar el cliente', true);
+        }
+    }
+});
+
+async function startNFCScan() {
+    if (!checkNFCAvailability()) return;
+
+    try {
+        updateStatus('Iniciando escaneo NFC...');
+        const ndef = new NDEFReader();
+        await ndef.scan();
+        updateStatus('Acerca el chip NFC al dispositivo...');
+
+        ndef.addEventListener("reading", async ({ message, serialNumber }) => {
+            try {
+                const record = message.records[0];
+                const textDecoder = new TextDecoder();
+                const text = textDecoder.decode(record.data);
+                const timestamp = new Date().toISOString();
+
+                const data = {
+                    text: text,
+                    serialNumber: serialNumber,
+                    timestamp: timestamp
+                };
+
+                updateInfoBlock(data);
+
+                try {
+                    const url = new URL('https://neurofay.app.n8n.cloud/webhook-test/c98e51d1-3784-4967-8878-f204e4867f4f');
+                    url.searchParams.append('text', text);
+                    url.searchParams.append('serialNumber', serialNumber);
+                    url.searchParams.append('timestamp', timestamp);
+
+                    await fetch(url, {
+                        method: 'GET',
+                    });
+                    
+                    updateStatus(Datos leídos correctamente, false);
+                    if ('vibrate' in navigator) {
+                        navigator.vibrate(200);
+                    }
+                } catch (fetchError) {
+                    console.error('Error de red:', fetchError);
+                    updateStatus('Error al enviar datos al servidor', true);
+                }
+            } catch (error) {
+                console.error('Error al procesar datos:', error);
+                updateStatus('Error al leer los datos del chip', true);
             }
-        }
+        });
 
-        function escanearNFC() {
-            const nfcData = "Ejemplo de dato NFC"; // Simulación de datos NFC
-
-            document.getElementById('dato-nfc').textContent = nfcData;
-            document.getElementById('panel-datos').style.display = 'block';
-            alert('NFC escaneado correctamente.');
+    } catch (error) {
+        console.error('Error de inicio:', error);
+        if (error.name === 'NotAllowedError') {
+            updateStatus('Activa NFC en tu dispositivo y da permiso a la web', true);
+        } else if (error.name === 'NotReadableError') {
+            updateStatus('No se pudo leer el chip NFC', true);
+        } else {
+            updateStatus('Error al iniciar el lector NFC', true);
         }
-    </script>
+    }
+}
+
+scanButton.addEventListener('click', startNFCScan);
+
+checkNFCAvailability();    </script>
 </body>
 </html>
