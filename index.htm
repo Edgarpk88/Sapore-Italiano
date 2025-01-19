@@ -3,162 +3,136 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Clientes</title>
+    <title>Formulario Compacto</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
-            height: 100vh;
-            background-color: #f4f4f4;
-        }
-        .container {
-            display: none;
-            flex-direction: column;
             align-items: center;
-            background: #fff;
+            height: 100vh;
+            background-color: #f4f4f9;
+        }
+
+        .container {
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            width: 90%;
+            width: 100%;
             max-width: 400px;
+            text-align: center;
         }
-        .container.visible {
-            display: flex;
+
+        h1 {
+            font-size: 1.5rem;
+            color: #333333;
         }
-        .button {
-            padding: 10px 15px;
-            margin: 5px;
-            font-size: 16px;
+
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            color: #fff;
+            font-size: 1rem;
         }
-        .button-primary {
+
+        .btn-primary {
             background-color: #007bff;
+            color: white;
         }
-        .button-secondary {
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn-success {
             background-color: #28a745;
+            color: white;
         }
-        .button-danger {
-            background-color: #dc3545;
-        }
-        input {
-            padding: 10px;
-            margin: 10px 0;
-            width: 100%;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-        #infoBlock {
+
+        .panel {
             margin-top: 20px;
             padding: 10px;
-            background: #e9ecef;
-            border: 1px solid #ddd;
+            background: #f9f9f9;
+            border: 1px solid #ccc;
             border-radius: 5px;
-            width: 100%;
             text-align: left;
+        }
+
+        .panel h2 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: #555;
+        }
+
+        .panel p {
+            margin: 5px 0;
+            color: #666;
         }
     </style>
 </head>
 <body>
-    <div id="menu" class="container visible">
-        <button id="registrarButton" class="button button-primary">Registrar Cliente</button>
-        <button id="buscarButton" class="button button-secondary">Buscar Cliente</button>
-    </div>
+    <div class="container">
+        <h1>Formulario de Registro</h1>
 
-    <div id="registroForm" class="container">
-        <h2>Registrar Cliente</h2>
-        <input type="text" id="nameInput" placeholder="Nombre del cliente">
-        <input type="text" id="phoneInput" placeholder="Teléfono del cliente">
-        <input type="email" id="emailInput" placeholder="Correo del cliente">
-        <input type="text" id="direccionInput" placeholder="Dirección del cliente">
-        <button id="okButton" class="button button-primary">Registrar</button>
-        <button id="cancelarRegistroButton" class="button button-danger">Cancelar</button>
-    </div>
+        <!-- Campo de usuario -->
+        <input type="text" id="usuario" placeholder="Nombre de usuario">
 
-    <div id="buscarForm" class="container">
-        <h2>Buscar Cliente</h2>
-        <input type="text" id="buscarClientName" placeholder="Nombre del cliente">
-        <input type="text" id="buscarClientPhone" placeholder="Teléfono del cliente">
-        <input type="email" id="buscarClientEmail" placeholder="Correo del cliente">
-        <button id="buscarOkButton" class="button button-secondary">Buscar</button>
-        <button id="cancelarBuscarButton" class="button button-danger">Cancelar</button>
-    </div>
+        <!-- Campo de contraseña -->
+        <input type="password" id="contraseña" placeholder="Contraseña">
 
-    <div id="infoBlock" class="container visible">
-        <p>Información del cliente aparecerá aquí.</p>
+        <!-- Botón de registrar -->
+        <button class="btn-primary" onclick="registrar()">Registrar</button>
+
+        <!-- Botón de escanear NFC -->
+        <button class="btn-secondary" onclick="escanearNFC()">Escanear NFC</button>
+
+        <!-- Panel para mostrar datos -->
+        <div class="panel" id="panel-datos" style="display: none;">
+            <h2>Datos del Usuario</h2>
+            <p><strong>Usuario:</strong> <span id="dato-usuario"></span></p>
+            <p><strong>Contraseña:</strong> <span id="dato-contraseña"></span></p>
+            <p><strong>NFC:</strong> <span id="dato-nfc"></span></p>
+        </div>
     </div>
 
     <script>
-        // Elementos
-        const menu = document.getElementById('menu');
-        const registroForm = document.getElementById('registroForm');
-        const buscarForm = document.getElementById('buscarForm');
-        const infoBlock = document.getElementById('infoBlock');
+        function registrar() {
+            const usuario = document.getElementById('usuario').value;
+            const contraseña = document.getElementById('contraseña').value;
 
-        const registrarButton = document.getElementById('registrarButton');
-        const buscarButton = document.getElementById('buscarButton');
-
-        const okButton = document.getElementById('okButton');
-        const cancelarRegistroButton = document.getElementById('cancelarRegistroButton');
-
-        const buscarOkButton = document.getElementById('buscarOkButton');
-        const cancelarBuscarButton = document.getElementById('cancelarBuscarButton');
-
-        // Funciones
-        function toggleVisibility(showElement) {
-            [menu, registroForm, buscarForm, infoBlock].forEach(el => el.classList.remove('visible'));
-            showElement.classList.add('visible');
+            if (usuario && contraseña) {
+                document.getElementById('dato-usuario').textContent = usuario;
+                document.getElementById('dato-contraseña').textContent = contraseña;
+                document.getElementById('panel-datos').style.display = 'block';
+                alert('Usuario registrado correctamente.');
+            } else {
+                alert('Por favor, complete todos los campos.');
+            }
         }
 
-        function updateInfoBlock(message, isError = false) {
-            infoBlock.innerHTML = `<p style="color: ${isError ? 'red' : 'green'};">${message}</p>`;
-            toggleVisibility(infoBlock);
+        function escanearNFC() {
+            const nfcData = "Ejemplo de dato NFC"; // Simulación de datos NFC
+
+            document.getElementById('dato-nfc').textContent = nfcData;
+            document.getElementById('panel-datos').style.display = 'block';
+            alert('NFC escaneado correctamente.');
         }
-
-        // Eventos del Menú
-        registrarButton.addEventListener('click', () => toggleVisibility(registroForm));
-        buscarButton.addEventListener('click', () => toggleVisibility(buscarForm));
-
-        // Registro
-        okButton.addEventListener('click', () => {
-            const name = document.getElementById('nameInput').value.trim();
-            const phone = document.getElementById('phoneInput').value.trim();
-            const email = document.getElementById('emailInput').value.trim();
-            const direccion = document.getElementById('direccionInput').value.trim();
-
-            if (!name || !phone || !email || !direccion) {
-                updateInfoBlock('Por favor, completa todos los campos.', true);
-                return;
-            }
-
-            updateInfoBlock('Cliente registrado con éxito.');
-            toggleVisibility(menu);
-        });
-
-        cancelarRegistroButton.addEventListener('click', () => toggleVisibility(menu));
-
-        // Búsqueda
-        buscarOkButton.addEventListener('click', () => {
-            const name = document.getElementById('buscarClientName').value.trim();
-            const phone = document.getElementById('buscarClientPhone').value.trim();
-            const email = document.getElementById('buscarClientEmail').value.trim();
-
-            if (!name && !phone && !email) {
-                updateInfoBlock('Por favor, ingresa al menos un dato para buscar.', true);
-                return;
-            }
-
-            updateInfoBlock('Cliente encontrado: Información simulada aquí.');
-        });
-
-        cancelarBuscarButton.addEventListener('click', () => toggleVisibility(menu));
     </script>
 </body>
 </html>
