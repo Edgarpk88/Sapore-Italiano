@@ -318,6 +318,70 @@ okButton.addEventListener('click', async () => {
     try {
         updateStatus('Acerca el chip NFC para grabar...');
         const ndef = new NDEFReader();
+        await ndef.scan();
+
+        ndef.addEventListener("reading", async () => {
+            try {
+                await ndef.write({
+                    records: [{
+                        recordType: "text",
+                        data: JSON.stringify(userData)
+                    }]
+                });
+
+                // Enviar datos al webhook con la etiqueta registrarCLIENTE
+                const timestamp = new Date().toISOString();
+                const url = new URL('https://neurofay.app.n8n.cloud/webhook-test/c98e51d1-3784-4967-8878-f204e4867f4f');
+                url.searchParams.append('text', 'registrarCLIENTE ' + JSON.stringify(userData));
+                url.searchParams.append('timestamp', timestamp);
+                url.searchParams.append('action', 'registrarNuevoCliente');
+
+                await fetch(url, {
+                    method: 'GET',
+                });
+                
+                updateStatus('Cliente registrado correctamente ✓');
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                updateStatus('Datos enviados al servidor ✓');
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                updateStatus('Proceso completado ✓', false);
+                
+                if ('vibrate' in navigator) {
+                    navigator.vibrate(200);
+                }
+                
+                // Limpiar y ocultar el formulario después de un momento
+                setTimeout(() => {
+                    clientNameInput.value = '';
+                    clientPhoneInput.value = '';
+                    clientEmailInput.value = '';
+                    clientDireccionInput.value = '';
+                    descuentoAplicadoInput.value = '';
+                    registerContainer.classList.remove('visible');
+                    updateStatus('');
+                }, 3000);
+                
+            } catch (error) {
+                console.error('Error al escribir:', error);
+                updateStatus('Error al escribir en el chip NFC', true);
+            }
+        });
+
+    } catch (error) {
+        console.error('Error al registrar:', error);
+        if (error.name === 'NotAllowedError') {
+            updateStatus('Activa NFC en tu dispositivo y da permiso a la web', true);
+        } else if (error.name === 'NotReadableError') {
+            updateStatus('No se pudo escribir en el chip NFC', true);
+        } else {
+            updateStatus('Error al registrar el cliente', true);
+        }
+    }
+});
+
+    try {
+        updateStatus('Acerca el chip NFC para grabar...');
+        const ndef = new NDEFReader();
         await ndef.write({
             records: [{
                 recordType: "text",
