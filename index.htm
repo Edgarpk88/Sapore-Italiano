@@ -321,14 +321,16 @@ buscarOkButton.addEventListener('click', async () => {
             method: 'GET',
         });
 
-        const clientData = await response.json();
+       const clientData = await response.json();
+// Extraer y parsear los datos del objeto anidado
+const parsedClientData = JSON.parse(clientData[0].output);
 
-        // Actualizar la información en el bloque de información
-        updateInfoBlock({
-            text: clientData, // Asumiendo que los datos vienen en el formato correcto
-            serialNumber: clientData.serialNumber || '-',
-            timestamp: timestamp
-        });
+// Actualizar la información en el bloque de información
+updateInfoBlock({
+    text: parsedClientData,
+    serialNumber: parsedClientData.serialNumber || '-',
+    timestamp: parsedClientData.timestamp
+});
 
         updateStatus('Cliente encontrado. Acerque el chip para grabar cliente', false);
 
@@ -338,13 +340,13 @@ buscarOkButton.addEventListener('click', async () => {
 
         ndef.addEventListener("reading", async () => {
             try {
-                const dataToWrite = {
-                    name: clientData.name,
-                    phone: clientData.phone,
-                    email: clientData.email,
-                    direccion: clientData.direccion,
-                    descuento: clientData.descuento
-                };
+               const dataToWrite = {
+    name: parsedClientData.name,
+    phone: parsedClientData.phone,
+    email: parsedClientData.email,
+    direccion: parsedClientData.direccion,
+    descuento: parsedClientData.descuento
+};
 
                 await ndef.write({
                     records: [{
