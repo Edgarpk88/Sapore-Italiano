@@ -270,6 +270,10 @@ function updateInfoBlock(data) {
     currentDiscount.textContent = parsedData.descuento || '-';
     currentSerial.textContent = data.serialNumber || '-';
     currentTimestamp.textContent = new Date(data.timestamp).toLocaleString() || '-';
+    document.getElementById('currentclasificacion').textContent = parsedData.clasificacion || '-';
+    document.getElementById('currentPuntos').textContent = parsedData.puntos || '-';
+    document.getElementById('currentvisitas').textContent = parsedData.visitas || '-';
+    document.getElementById('currentnumerocliente').textContent = parsedData.numerocliente || '-';
 }
 
 function checkNFCAvailability() {
