@@ -501,21 +501,10 @@ updateStatus('Acerca el chip NFC al dispositivo...');
         };
 
         updateInfoBlock(data);
-        updateStatus('Enviando datos al servidor, espere por favor...');
 
         try {
             const url = new URL('https://neurofay.app.n8n.cloud/webhook-test/c98e51d1-3784-4967-8878-f204e4867f4f');
-            url.searchParams.append('text', 'actualizarCLIENTE ' + text);
-            url.searchParams.append('serialNumber', serialNumber);
-            url.searchParams.append('timestamp', timestamp);
-
-            const response = await fetch(url, {
-                method: 'GET',
-            });
-
-            const clientData = await response.json();
-            const parsedClientData = JSON.parse(clientData[0].output);
-            updateInfoBlock({text: parsedClientData}); // Actualizar con datos nuevos manteniendo la visualización
+            
                 url.searchParams.append('text', 'actualizarCLIENTE ' + text); // Añadimos la etiqueta
                 url.searchParams.append('serialNumber', serialNumber);
                 url.searchParams.append('timestamp', timestamp);
