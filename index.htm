@@ -3,93 +3,218 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lector NFC BOCADITO</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <title>NFC Web App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .panel {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+        .button {
+            padding: 10px;
+            margin: 5px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .button:disabled {
+            background-color: #ccc;
+        }
+        .info-panel {
+            height: 100px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+        .data-panel {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
 <body>
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="loading-spinner"></div>
-    </div>
-    <div class="title-container">
-        <h1 class="main-title">BOCADITO</h1>
-        <h2 class="subtitle">Pasión por los Bocadillos</h2>
-    </div>
-    <div class="container">
-        <button id="registerButton" class="button">Registrar</button>
-        <button id="buscarButton" class="button">Buscar</button>
+    <h1>NFC Web App</h1>
+    
+    <div class="info-panel" id="infoPanel"></div>
+    
+    <div class="data-panel" id="dataPanel"></div>
+    
+    <button class="button" id="registrarBtn">Registrar</button>
+    <button class="button" id="escanearBtn">Escanear</button>
+    <button class="button" id="buscarBtn">Buscar</button>
 
-        <div id="registerContainer" class="form-container">
-            <input type="text" id="registerName" class="form-input" placeholder="Nombre del cliente">
-            <input type="tel" id="registerPhone" class="form-input" placeholder="Teléfono">
-            <input type="email" id="registerEmail" class="form-input" placeholder="Email">
-            <input type="text" id="registerDireccion" class="form-input" placeholder="Dirección">
-            <input type="text" id="registerDescuento" class="form-input" placeholder="Descuento Aplicado">
-            <button id="registerOkButton" class="ok-button">OK</button>
-        </div>
-
-        <div id="buscarContainer" class="form-container">
-            <input type="text" id="buscarName" class="form-input" placeholder="Nombre del cliente">
-            <input type="tel" id="buscarPhone" class="form-input" placeholder="Teléfono">
-            <input type="email" id="buscarEmail" class="form-input" placeholder="Email">
-            <button id="buscarOkButton" class="ok-button">OK</button>
-        </div>
-
-        <button id="scanButton" class="button">Escanear NFC</button>
-        <div id="status" class="status"></div>
-        <div id="infoBlock" class="info-block">
-            <h3>Lectura actual</h3>
-            <div class="info-item">
-                <span class="info-label">Nombre:</span>
-                <span id="currentName" class="info-value">-</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">Teléfono:</span>
-                <span id="currentPhone" class="info-value">-</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">Email:</span>
-                <span id="currentEmail" class="info-value">-</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">Dirección:</span>
-                <span id="currentadress" class="info-value">-</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">Descuento aplicado:</span>
-                <span id="currentDiscount" class="info-value">-</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">Clasificación:</span>
-                <span id="currentclasificacion" class="info-value">-</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">Puntos Cliente:</span>
-                <span id="currentPuntos" class="info-value">-</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">Numero de Visitas:</span>
-                <span id="currentvisitas" class="info-value">-</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">Número Serie:</span>
-                <span id="currentSerial" class="info-value">-</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">Número Cliente:</span>
-                <span id="currentnumerocliente" class="info-value">-</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">Última Visita:</span>
-                <span id="currentTimestamp" class="info-value">-</span>
-            </div>
-        </div>
+    <div id="registrarForm" style="display:none;">
+        <input type="text" id="nombre" placeholder="Nombre">
+        <input type="text" id="telefono" placeholder="Teléfono">
+        <input type="email" id="email" placeholder="Email">
+        <input type="text" id="direccion" placeholder="Dirección">
+        <input type="text" id="descuento" placeholder="Descuento">
+        <button class="button" id="okRegistrarBtn">OK</button>
     </div>
-    <a href="https://sites.google.com/view/hdcopy3d/inicio" class="signature" target="_blank">
-        Diseñado por NeuroFay 5000
-    </a>
-    <script src="script.js"></script>
+
+    <div id="buscarForm" style="display:none;">
+        <input type="text" id="buscarNombre" placeholder="Nombre">
+        <input type="email" id="buscarEmail" placeholder="Email">
+        <input type="text" id="buscarTelefono" placeholder="Teléfono">
+        <button class="button" id="okBuscarBtn">OK</button>
+    </div>
+
+    <script>
+        const infoPanel = document.getElementById('infoPanel');
+        const dataPanel = document.getElementById('dataPanel');
+        const registrarBtn = document.getElementById('registrarBtn');
+        const escanearBtn = document.getElementById('escanearBtn');
+        const buscarBtn = document.getElementById('buscarBtn');
+        const registrarForm = document.getElementById('registrarForm');
+        const buscarForm = document.getElementById('buscarForm');
+        const okRegistrarBtn = document.getElementById('okRegistrarBtn');
+        const okBuscarBtn = document.getElementById('okBuscarBtn');
+
+        let nfcWriter;
+        let nfcReader;
+
+        // Función para mostrar mensajes en el panel informativo
+        function logInfo(message) {
+            infoPanel.innerHTML += `<p>${message}</p>`;
+            infoPanel.scrollTop = infoPanel.scrollHeight;
+        }
+
+        // Función para activar NFC
+        async function activateNFC() {
+            if (!("NDEFReader" in window)) {
+                logInfo("NFC no es compatible con este dispositivo.");
+                return;
+            }
+
+            try {
+                nfcWriter = new NDEFReader();
+                nfcReader = new NDEFReader();
+                logInfo("NFC activado.");
+            } catch (error) {
+                logInfo("Error al activar NFC: " + error.message);
+            }
+        }
+
+        // Función para registrar datos en un chip NFC
+        async function registerData() {
+            const nombre = document.getElementById('nombre').value;
+            const telefono = document.getElementById('telefono').value;
+            const email = document.getElementById('email').value;
+            const direccion = document.getElementById('direccion').value;
+            const descuento = document.getElementById('descuento').value;
+
+            const data = {
+                nombre,
+                telefono,
+                email,
+                direccion,
+                descuento
+            };
+
+            const serialNumber = await writeNFC(data);
+            if (serialNumber) {
+                const timestamp = new Date().toISOString();
+                sendToWebhook('registrarCLIENTE', { ...data, serialNumber, timestamp });
+            }
+        }
+
+        // Función para escribir en un chip NFC
+        async function writeNFC(data) {
+            try {
+                await nfcWriter.write({
+                    records: [{ recordType: "text", data: JSON.stringify(data) }]
+                });
+                logInfo("Datos escritos en el chip NFC.");
+                return nfcWriter.serialNumber;
+            } catch (error) {
+                logInfo("Error al escribir en el chip NFC: " + error.message);
+                return null;
+            }
+        }
+
+        // Función para escanear un chip NFC
+        async function scanNFC() {
+            try {
+                await nfcReader.scan();
+                nfcReader.onreading = event => {
+                    const decoder = new TextDecoder();
+                    const data = JSON.parse(decoder.decode(event.message.records[0].data));
+                    displayData(data);
+                    const serialNumber = event.serialNumber;
+                    const timestamp = new Date().toISOString();
+                    sendToWebhook('actualizarCLIENTE', { ...data, serialNumber, timestamp });
+                };
+                logInfo("Escaneando chip NFC...");
+            } catch (error) {
+                logInfo("Error al escanear el chip NFC: " + error.message);
+            }
+        }
+
+        // Función para buscar datos en el webhook
+        async function searchData() {
+            const nombre = document.getElementById('buscarNombre').value;
+            const email = document.getElementById('buscarEmail').value;
+            const telefono = document.getElementById('buscarTelefono').value;
+
+            const searchCriteria = { nombre, email, telefono };
+            sendToWebhook('buscarCLIENTE', searchCriteria);
+        }
+
+        // Función para enviar datos al webhook
+        async function sendToWebhook(action, data) {
+            const response = await fetch('https://n8n-n8n.dlyqti.easypanel.host/webhook/fab43c1a-ef5d-43d8-ae52-3e2d891496dd', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ action, data })
+            });
+
+            const result = await response.json();
+            displayData(result);
+        }
+
+        // Función para mostrar datos en el panel de visualización
+        function displayData(data) {
+            dataPanel.innerHTML = `
+                <p><strong>Nombre:</strong> ${data.name}</p>
+                <p><strong>Teléfono:</strong> ${data.phone}</p>
+                <p><strong>Email:</strong> ${data.Email}</p>
+                <p><strong>Dirección:</strong> ${data.direccion}</p>
+                <p><strong>Descuento:</strong> ${data.descuento}</p>
+                <p><strong>Clasificación:</strong> ${data.clasificación}</p>
+                <p><strong>Puntos:</strong> ${data.puntos}</p>
+                <p><strong>Visitas:</strong> ${data.visitas}</p>
+                <p><strong>Última visita:</strong> ${data.timestamp}</p>
+            `;
+        }
+
+        // Event listeners
+        registrarBtn.addEventListener('click', () => {
+            registrarForm.style.display = 'block';
+            buscarForm.style.display = 'none';
+        });
+
+        escanearBtn.addEventListener('click', scanNFC);
+
+        buscarBtn.addEventListener('click', () => {
+            buscarForm.style.display = 'block';
+            registrarForm.style.display = 'none';
+        });
+
+        okRegistrarBtn.addEventListener('click', registerData);
+
+        okBuscarBtn.addEventListener('click', searchData);
+
+        // Activar NFC al cargar la página
+        activateNFC();
+    </script>
 </body>
 </html>
