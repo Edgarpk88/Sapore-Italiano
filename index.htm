@@ -179,29 +179,28 @@
         </div>
     </div>
 
-   <script>
-    // Configuración Baserow
+<script>
+    // CONFIGURACIÓN ACTUALIZADA CON NOMBRES REALES DE CAMPOS
     const BASEROW_CONFIG = {
-        TABLAS: {
-            CLIENTES: {
-                ID: 420235,
-                CAMPOS: {
-                    EMAIL: 3224265,       // ID del campo Email
-                    CONTRASEÑA: 3224275,  // ID del campo Contraseña
-                    PUNTOS: 3224318,      // ID del campo Puntos Cliente
-                    VISITAS: 3224308      // ID del campo Número de pedidos
-                }
-            },
-            CARTA: {
-                ID: 420254,
-                CAMPOS: {
-                    NOMBRE: 3224509,      // ID del campo Nombre
-                    TIPO: 3224510,        // ID del campo Tipo
-                    PRECIO: 3224516       // ID del campo Precio normal €
-                }
+        CLIENTES: {
+            ID_TABLA: 420235,
+            CAMPOS: {
+                // NOMBRES REALES DE LOS CAMPOS EN BASEROW
+                EMAIL: "Email",         // Nombre real del campo (ID 3224265)
+                CONTRASEÑA: "Contraseña", // Nombre real (ID 3224275)
+                PUNTOS: "Puntos Cliente", // Nombre real (ID 3224318)
+                VISITAS: "Número de pedidos" // Nombre real (ID 3224308)
             }
         },
-        TOKEN: 'e1gj8PHAdmpO8c9ILZIqUU9sgT4LrhXD' // ← Tu token de Baserow aquí
+        CARTA: {
+            ID_TABLA: 420254,
+            CAMPOS: {
+                NOMBRE: "Nombre",      // Nombre real (ID 3224509)
+                TIPO: "Tipo",          // Nombre real (ID 3224510)
+                PRECIO: "Precio normal €" // Nombre real (ID 3224516)
+            }
+        },
+        TOKEN: 'e1gj8PHAdmpO8c9ILZIqUU9sgT4LrhXD' // ← Token válido con permisos de lectura
     };
 
     async function login() {
@@ -210,16 +209,19 @@
         
         try {
             const response = await axios.get(
-                `https://api.baserow.io/api/database/rows/table/${BASEROW_CONFIG.TABLAS.CLIENTES.ID}/`, 
+                `https://api.baserow.io/api/database/rows/table/${BASEROW_CONFIG.CLIENTES.ID_TABLA}/`, 
                 {
                     params: {
-                        // FILTRO POR EMAIL (ID 3224265)
-                        [`filter__field_${BASEROW_CONFIG.TABLAS.CLIENTES.CAMPOS.EMAIL}__equal`]: email,
-                        
-                        // FILTRO POR CONTRASEÑA (ID 3224275)
-                        [`filter__field_${BASEROW_CONFIG.TABLAS.CLIENTES.CAMPOS.CONTRASEÑA}__equal`]: password,
-                        
-                        user_field_names: true
+                        // FILTROS POR NOMBRE REAL DE CAMPOS
+                        [`filter__${BASEROW_CONFIG.CLIENTES.CAMPOS.EMAIL}__equal`]: email,
+                        [`filter__${BASEROW_CONFIG.CLIENTES.CAMPOS.CONTRASEÑA}__equal`]: password,
+                        user_field_names: true,
+                        include: [  // Incluir campos necesarios
+                            BASEROW_CONFIG.CLIENTES.CAMPOS.EMAIL,
+                            BASEROW_CONFIG.CLIENTES.CAMPOS.PUNTOS,
+                            BASEROW_CONFIG.CLIENTES.CAMPOS.VISITAS,
+                            'Teléfono'  // Necesario para el botón de llamar
+                        ]
                     },
                     headers: {
                         Authorization: `Token ${BASEROW_CONFIG.TOKEN}`
@@ -229,35 +231,37 @@
 
             if(response.data.results.length > 0) {
                 usuario = response.data.results[0];
+                console.log("Usuario autenticado:", usuario); // Depuración
+                
                 document.getElementById('loginPage').style.display = 'none';
                 document.getElementById('mainPage').style.display = 'block';
                 
-                // Cargar puntos (ID 3224318) y visitas (ID 3224308)
-                document.getElementById('puntos').textContent = usuario['Puntos Cliente']; // Campo ID 3224318
-                document.getElementById('visitas').textContent = usuario['Número de pedidos']; // Campo ID 3224308
+                // Mostrar datos usando nombres reales
+                document.getElementById('puntos').textContent = usuario[BASEROW_CONFIG.CLIENTES.CAMPOS.PUNTOS];
+                document.getElementById('visitas').textContent = usuario[BASEROW_CONFIG.CLIENTES.CAMPOS.VISITAS];
                 
-                cargarMenu();
+                await cargarMenu();
             } else {
-                alert('Credenciales incorrectas');
+                alert('⚠️ Credenciales incorrectas o usuario no existe');
             }
         } catch (error) {
-            console.error(error);
-            alert('Error al iniciar sesión');
+            console.error("Error completo:", error.response?.data || error.message);
+            alert('🚨 Error de conexión con el servidor');
         }
     }
 
     async function cargarMenu() {
         try {
             const response = await axios.get(
-                `https://api.baserow.io/api/database/rows/table/${BASEROW_CONFIG.TABLAS.CARTA.ID}/`, 
+                `https://api.baserow.io/api/database/rows/table/${BASEROW_CONFIG.CARTA.ID_TABLA}/`, 
                 {
                     params: { 
                         user_field_names: true,
-                        // Campos que necesitamos de la tabla Carta:
-                        // - Nombre (ID 3224509)
-                        // - Tipo (ID 3224510)
-                        // - Precio normal € (ID 3224516)
-                        include: ['Nombre', 'Tipo', 'Precio normal €'] 
+                        include: [  // Solo campos necesarios
+                            BASEROW_CONFIG.CARTA.CAMPOS.NOMBRE,
+                            BASEROW_CONFIG.CARTA.CAMPOS.TIPO,
+                            BASEROW_CONFIG.CARTA.CAMPOS.PRECIO
+                        ]
                     },
                     headers: { 
                         Authorization: `Token ${BASEROW_CONFIG.TOKEN}` 
@@ -265,33 +269,16 @@
                 }
             );
             
-            menuData = groupBy(response.data.results, 'Tipo'); // Usando campo Tipo (ID 3224510)
+            console.log("Menú cargado:", response.data); // Depuración
+            menuData = groupBy(response.data.results, BASEROW_CONFIG.CARTA.CAMPOS.TIPO);
             generarDropdowns();
         } catch (error) {
-            console.error(error);
+            console.error("Error cargando menú:", error);
+            alert('Error cargando el menú');
         }
-    }
-
-    function agregarAlCarrito(platoId) {
-        const plato = Object.values(menuData).flat().find(p => p.id === platoId);
-        const existente = carrito.find(item => item.plato.id === platoId);
-        
-        if(existente) {
-            existente.cantidad++;
-        } else {
-            carrito.push({ 
-                plato: {
-                    id: plato.id,
-                    nombre: plato.Nombre,       // Campo Nombre (ID 3224509)
-                    precio: plato['Precio normal €'] // Campo Precio (ID 3224516)
-                }, 
-                cantidad: 1 
-            });
-        }
-        
-        actualizarCarrito();
     }
 </script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    Diseñado por NeuroFay
 </body>
 </html>
