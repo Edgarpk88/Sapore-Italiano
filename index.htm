@@ -179,171 +179,119 @@
         </div>
     </div>
 
-    <script>
-        let usuario = null;
-        let carrito = [];
-        let menuData = {};
+   <script>
+    // Configuración Baserow
+    const BASEROW_CONFIG = {
+        TABLAS: {
+            CLIENTES: {
+                ID: 420235,
+                CAMPOS: {
+                    EMAIL: 3224265,       // ID del campo Email
+                    CONTRASEÑA: 3224275,  // ID del campo Contraseña
+                    PUNTOS: 3224318,      // ID del campo Puntos Cliente
+                    VISITAS: 3224308      // ID del campo Número de pedidos
+                }
+            },
+            CARTA: {
+                ID: 420254,
+                CAMPOS: {
+                    NOMBRE: 3224509,      // ID del campo Nombre
+                    TIPO: 3224510,        // ID del campo Tipo
+                    PRECIO: 3224516       // ID del campo Precio normal €
+                }
+            }
+        },
+        TOKEN: 'e1gj8PHAdmpO8c9ILZIqUU9sgT4LrhXD' // ← Tu token de Baserow aquí
+    };
 
-        async function login() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            
-            try {
-                const response = await axios.get('https://api.baserow.io/api/database/rows/table/420235/', {
+    async function login() {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        
+        try {
+            const response = await axios.get(
+                `https://api.baserow.io/api/database/rows/table/${BASEROW_CONFIG.TABLAS.CLIENTES.ID}/`, 
+                {
                     params: {
-                        filter__field_3224473__equal: email,
-                        filter__field_3224275__equal: password,
+                        // FILTRO POR EMAIL (ID 3224265)
+                        [`filter__field_${BASEROW_CONFIG.TABLAS.CLIENTES.CAMPOS.EMAIL}__equal`]: email,
+                        
+                        // FILTRO POR CONTRASEÑA (ID 3224275)
+                        [`filter__field_${BASEROW_CONFIG.TABLAS.CLIENTES.CAMPOS.CONTRASEÑA}__equal`]: password,
+                        
                         user_field_names: true
                     },
                     headers: {
-                        Authorization: 'e1gj8PHAdmpO8c9ILZIqUU9sgT4LrhXD'
+                        Authorization: `Token ${BASEROW_CONFIG.TOKEN}`
                     }
-                });
-
-                if(response.data.results.length > 0) {
-                    usuario = response.data.results[0];
-                    document.getElementById('loginPage').style.display = 'none';
-                    document.getElementById('mainPage').style.display = 'block';
-                    cargarDatosUsuario();
-                    cargarMenu();
-                } else {
-                    alert('Credenciales incorrectas');
                 }
-            } catch (error) {
-                console.error(error);
-                alert('Error al iniciar sesión');
-            }
-        }
+            );
 
-        function cargarDatosUsuario() {
-            document.getElementById('puntos').textContent = usuario['Puntos Cliente'];
-            document.getElementById('visitas').textContent = usuario['Número de pedidos'];
-        }
-
-        async function cargarMenu() {
-            try {
-                const response = await axios.get('https://api.baserow.io/api/database/rows/table/420254/', {
-                    params: { user_field_names: true },
-                    headers: { Authorization: 'Token YOUR_DATABASE_TOKEN' }
-                });
+            if(response.data.results.length > 0) {
+                usuario = response.data.results[0];
+                document.getElementById('loginPage').style.display = 'none';
+                document.getElementById('mainPage').style.display = 'block';
                 
-                menuData = groupBy(response.data.results, 'Tipo');
-                generarDropdowns();
-            } catch (error) {
-                console.error(error);
+                // Cargar puntos (ID 3224318) y visitas (ID 3224308)
+                document.getElementById('puntos').textContent = usuario['Puntos Cliente']; // Campo ID 3224318
+                document.getElementById('visitas').textContent = usuario['Número de pedidos']; // Campo ID 3224308
+                
+                cargarMenu();
+            } else {
+                alert('Credenciales incorrectas');
             }
+        } catch (error) {
+            console.error(error);
+            alert('Error al iniciar sesión');
         }
+    }
 
-        function groupBy(array, key) {
-            return array.reduce((result, item) => {
-                (result[item[key]] = result[item[key]] || []).push(item);
-                return result;
-            }, {});
-        }
-
-        function generarDropdowns() {
-            const contenedor = document.getElementById('menuDropdowns');
-            contenedor.innerHTML = '';
+    async function cargarMenu() {
+        try {
+            const response = await axios.get(
+                `https://api.baserow.io/api/database/rows/table/${BASEROW_CONFIG.TABLAS.CARTA.ID}/`, 
+                {
+                    params: { 
+                        user_field_names: true,
+                        // Campos que necesitamos de la tabla Carta:
+                        // - Nombre (ID 3224509)
+                        // - Tipo (ID 3224510)
+                        // - Precio normal € (ID 3224516)
+                        include: ['Nombre', 'Tipo', 'Precio normal €'] 
+                    },
+                    headers: { 
+                        Authorization: `Token ${BASEROW_CONFIG.TOKEN}` 
+                    }
+                }
+            );
             
-            for(const categoria in menuData) {
-                const dropdownHTML = `
-                    <div class="dropdown">
-                        <button class="dropdown-btn">${categoria}</button>
-                        <div class="dropdown-content">
-                            ${menuData[categoria].map(plato => `
-                                <div class="producto" onclick="agregarAlCarrito(${plato.id})">
-                                    ${plato.Nombre} - ${plato['Precio normal €']}€
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                `;
-                contenedor.innerHTML += dropdownHTML;
-            }
+            menuData = groupBy(response.data.results, 'Tipo'); // Usando campo Tipo (ID 3224510)
+            generarDropdowns();
+        } catch (error) {
+            console.error(error);
+        }
+    }
 
-            // Mostrar/ocultar dropdowns
-            document.querySelectorAll('.dropdown-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    this.nextElementSibling.style.display = 
-                        this.nextElementSibling.style.display === 'block' ? 'none' : 'block';
-                });
+    function agregarAlCarrito(platoId) {
+        const plato = Object.values(menuData).flat().find(p => p.id === platoId);
+        const existente = carrito.find(item => item.plato.id === platoId);
+        
+        if(existente) {
+            existente.cantidad++;
+        } else {
+            carrito.push({ 
+                plato: {
+                    id: plato.id,
+                    nombre: plato.Nombre,       // Campo Nombre (ID 3224509)
+                    precio: plato['Precio normal €'] // Campo Precio (ID 3224516)
+                }, 
+                cantidad: 1 
             });
         }
-
-        function agregarAlCarrito(platoId) {
-            const plato = Object.values(menuData).flat().find(p => p.id === platoId);
-            const existente = carrito.find(item => item.plato.id === platoId);
-            
-            if(existente) {
-                existente.cantidad++;
-            } else {
-                carrito.push({ plato, cantidad: 1 });
-            }
-            
-            actualizarCarrito();
-        }
-
-        function actualizarCarrito() {
-            const contenedor = document.getElementById('carrito');
-            contenedor.innerHTML = carrito.map(item => `
-                <div class="item-carrito">
-                    <div>${item.plato.Nombre}</div>
-                    <div class="cantidad-control">
-                        <button onclick="cambiarCantidad(${item.plato.id}, -1)">-</button>
-                        <span>${item.cantidad}</span>
-                        <button onclick="cambiarCantidad(${item.plato.id}, 1)">+</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function cambiarCantidad(platoId, delta) {
-            const item = carrito.find(item => item.plato.id === platoId);
-            item.cantidad += delta;
-            
-            if(item.cantidad < 1) {
-                carrito = carrito.filter(i => i !== item);
-            }
-            
-            actualizarCarrito();
-        }
-
-        async function enviarPedido() {
-            const pedido = {
-                usuario: usuario,
-                productos: carrito,
-                fecha: new Date().toISOString()
-            };
-
-            try {
-                const response = await axios.post('TU_WEBHOOK_PEDIDOS', {
-                    accion: 'realizarPedido',
-                    ...pedido
-                });
-                
-                if(response.data.ok) {
-                    alert('Pedido realizado con éxito');
-                    carrito = [];
-                    actualizarCarrito();
-                }
-            } catch (error) {
-                console.error(error);
-                alert('Error al enviar el pedido');
-            }
-        }
-
-        function recuperarContraseña() {
-            const email = document.getElementById('email').value;
-            if(email) {
-                axios.post('TU_WEBHOOK_RECUPERACION', { email });
-                alert('Se ha enviado un correo para recuperar tu contraseña');
-            }
-        }
-
-        // Funciones auxiliares
-        function llamar() { window.location.href = 'tel:' + usuario.Teléfono; }
-        function reservar() { window.location.href = 'tu_url_reservas'; }
-    </script>
+        
+        actualizarCarrito();
+    }
+</script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </body>
 </html>
