@@ -3,548 +3,347 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lector NFC BOCADITO</title>
+    <title>Bocadito Coin</title>
     <style>
-        /* Estilos previos sin cambios */
+        :root {
+            --azul: #2A5C82;
+            --azul-claro: #E8F1F5;
+        }
+        
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
-            font-family: 'Montserrat', sans-serif;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            background: var(--azul-claro);
             min-height: 100vh;
-            background-color: #f5f5f5;
         }
-        .title-container {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .main-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 2.5em;
-            color: #5393e6;
-            margin: 0;
-            letter-spacing: 0.5em;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
-        }
-        .subtitle {
-            font-size: 1.2em;
-            color: #1a1a1a;
-            margin: 5px 0 0 0;
-            letter-spacing: -0.05em;
-            text-transform: uppercase;
-        }
+
         .container {
             max-width: 600px;
-            width: 100%;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .logo {
+            width: 200px;
+            display: block;
+            margin: 20px auto;
+        }
+
+        .login-box {
             background: white;
             padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-        .button {
-            background-color: #251fd4;
-            border: none;
-            color: white;
-            padding: 16px;
+
+        input {
             width: 100%;
-            text-align: center;
-            text-decoration: none;
-            font-size: 18px;
-            margin: 4px 0;
-            cursor: pointer;
-            border-radius: 8px;
-            transition: background-color 0.3s;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
         }
-        .button:disabled {
-            background-color: #567be2;
-            cursor: not-allowed;
-        }
-        .register-container {
-            display: none;
-            margin: 10px 0;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            flex-direction: column;
-            gap: 10px;
-        }
-        .register-container.visible {
-            display: flex;
-        }
-        .buscar-container {
-            display: none;
-            margin: 10px 0;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            flex-direction: column;
-            gap: 10px;
-        }
-        .buscar-container.visible {
-            display: flex;
-        }
-        .register-input {
-            padding: 8px;
-            border: 1px solid #dee2e6;
-            border-radius: 4px;
-            font-size: 16px;
-        }
-        .buscar-input {
-            padding: 8px;
-            border: 1px solid #dee2e6;
-            border-radius: 4px;
-            font-size: 16px;
-        }
-        .ok-button {
-            background-color: #12dde1;
+
+        button {
+            background: var(--azul);
             color: white;
             border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
+            padding: 12px 20px;
+            border-radius: 5px;
             cursor: pointer;
-        }
-        .status {
-            margin-top: 20px;
-            padding: 16px;
-            border-radius: 8px;
             width: 100%;
-            text-align: center;
-            font-size: 16px;
+            margin: 5px 0;
         }
-        .error {
-            background-color: #ffebee;
-            color: #c62828;
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
         }
-        .success {
-            background-color: #e8f5e9;
-            color: #2e7d32;
-        }
-        .info-block {
-            background: #f8f9fa;
+
+        .stat-box {
+            background: white;
             padding: 15px;
-            border-radius: 8px;
-            border: 1px solid #dee2e6;
-            margin-top: 20px;
+            border-radius: 10px;
+            text-align: center;
+            flex: 1;
+            margin: 0 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-        .info-item {
+
+        .dropdown {
+            position: relative;
             margin: 10px 0;
-            font-size: 14px;
+        }
+
+        .dropdown-btn {
+            background: var(--azul);
+            color: white;
+            width: 100%;
+            text-align: left;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background: white;
+            width: 100%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 1;
+        }
+
+        .producto {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+
+        .carrito {
+            background: white;
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .item-carrito {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 8px 0;
+            padding: 10px 0;
             border-bottom: 1px solid #eee;
         }
-        .info-item:last-child {
-            border-bottom: none;
+
+        .cantidad-control {
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
-        .info-label {
-            font-weight: bold;
-            color: #495057;
+
+        .botones-inferiores {
+            display: flex;
+            gap: 10px;
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
         }
-        .info-value {
-            color: #212529;
+
+        .botones-inferiores button {
+            flex: 1;
         }
     </style>
 </head>
 <body>
-    <div class="title-container">
-        <h1 class="main-title">BOCADITO</h1>
-        <h2 class="subtitle">Pasión por los Bocadillos</h2>
-    </div>
-    <div class="container">
-        <button id="registerButton" class="button">Registrar</button>
-        <button id="buscarButton" class="button">Buscar</button>
-        
-        <div id="registerContainer" class="register-container">
-            <input type="text" id="registerName" class="register-input" placeholder="Nombre del cliente">
-            <input type="tel" id="registerPhone" class="register-input" placeholder="Teléfono">
-            <input type="email" id="registerEmail" class="register-input" placeholder="Email">
-            <input type="text" id="registerDireccion" class="register-input" placeholder="Dirección">
-            <input type="text" id="registerDescuento" class="register-input" placeholder="Descuento Aplicado">
-            <button id="registerOkButton" class="ok-button">OK</button>
-        </div>
-
-        <div id="buscarContainer" class="buscar-container">
-            <input type="text" id="buscarName" class="register-input" placeholder="Nombre del cliente">
-            <input type="tel" id="buscarPhone" class="register-input" placeholder="Teléfono">
-            <input type="email" id="buscarEmail" class="register-input" placeholder="Email">
-            <button id="buscarOkButton" class="ok-button">OK</button>
-        </div>
-
-        <button id="scanButton" class="button">Escanear NFC</button>
-        <div id="status" class="status"></div>
-        <div id="infoBlock" class="info-block">
-            <h3>Lectura actual</h3>
-            <div class="info-item">
-                <span class="info-label">Nombre:</span>
-                <span id="currentName" class="info-value">-</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">Teléfono:</span>
-                <span id="currentPhone" class="info-value">-</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">Email:</span>
-                <span id="currentEmail" class="info-value">-</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">Dirección:</span>
-                <span id="currentadress" class="info-value">-</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">Descuento aplicado:</span>
-                <span id="currentDiscount" class="info-value">-</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">Clasificación:</span>
-                <span id="currentclasificacion" class="info-value">-</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">Puntos Cliente:</span>
-                <span id="currentPuntos" class="info-value">-</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">Numero de Visitas:</span>
-                <span id="currentvisitas" class="info-value">-</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">Número Serie:</span>
-                <span id="currentSerial" class="info-value">-</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">Número Cliente:</span>
-                <span id="currentnumerocliente" class="info-value">-</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">Última Visita:</span>
-                <span id="currentTimestamp" class="info-value">-</span>
-            </div>
+    <!-- Página de Login -->
+    <div id="loginPage" class="container">
+        <img src="tu_logo.png" alt="Logo" class="logo">
+        <div class="login-box">
+            <input type="email" id="email" placeholder="Correo electrónico">
+            <input type="password" id="password" placeholder="Contraseña">
+            <button onclick="login()">Iniciar sesión</button>
+            <button onclick="recuperarContraseña()">Recuperar contraseña</button>
         </div>
     </div>
- <script>
-// Obtener referencias a los elementos del DOM
-const statusElement = document.getElementById('status');
-const scanButton = document.getElementById('scanButton');
-const registerButton = document.getElementById('registerButton');
-const buscarButton = document.getElementById('buscarButton');
-const registerContainer = document.getElementById('registerContainer');
-const buscarContainer = document.getElementById('buscarContainer');
 
-// Elementos del formulario de registro
-const clientNameInput = document.getElementById('registerName');
-const clientPhoneInput = document.getElementById('registerPhone');
-const clientEmailInput = document.getElementById('registerEmail');
-const clientDireccionInput = document.getElementById('registerDireccion');
-const descuentoAplicadoInput = document.getElementById('registerDescuento');
-const okButton = document.getElementById('registerOkButton');
+    <!-- Página Principal -->
+    <div id="mainPage" class="container" style="display: none;">
+        <div class="stats">
+            <div class="stat-box">
+                <h3>Puntos</h3>
+                <p id="puntos">0</p>
+            </div>
+            <div class="stat-box">
+                <h3>Visitas</h3>
+                <p id="visitas">0</p>
+            </div>
+        </div>
 
-// Elementos del formulario de búsqueda
-const buscarNameInput = document.getElementById('buscarName');
-const buscarPhoneInput = document.getElementById('buscarPhone');
-const buscarEmailInput = document.getElementById('buscarEmail');
-const buscarOkButton = document.getElementById('buscarOkButton');
-     
-// Elementos de visualización de datos
-const currentName = document.getElementById('currentName');
-const currentPhone = document.getElementById('currentPhone');
-const currentEmail = document.getElementById('currentEmail');
-const currentAdress = document.getElementById('currentadress');
-const currentDiscount = document.getElementById('currentDiscount');
-const currentSerial = document.getElementById('currentSerial');
-const currentTimestamp = document.getElementById('currentTimestamp');
+        <div id="menuDropdowns"></div>
 
-function updateStatus(message, isError = false) {
-    statusElement.textContent = message;
-    statusElement.className = 'status ' + (isError ? 'error' : 'success');
-}
+        <div class="carrito" id="carrito">
+            <!-- Productos del carrito aparecerán aquí -->
+        </div>
 
-function updateInfoBlock(data) {
-    const parsedData = typeof data.text === 'string' ? JSON.parse(data.text) : data.text;
-    currentName.textContent = parsedData.name || '-';
-    currentPhone.textContent = parsedData.phone || '-';
-    currentEmail.textContent = parsedData.email || '-';
-    currentAdress.textContent = parsedData.direccion || '-';
-    currentDiscount.textContent = parsedData.descuento || '-';
-    currentSerial.textContent = data.serialNumber || '-';
-    currentTimestamp.textContent = new Date(data.timestamp).toLocaleString() || '-';
-    document.getElementById('currentclasificacion').textContent = parsedData.clasificacion || '-';
-    document.getElementById('currentPuntos').textContent = parsedData.puntos || '-';
-    document.getElementById('currentvisitas').textContent = parsedData.visitas || '-';
-    document.getElementById('currentnumerocliente').textContent = parsedData.numerocliente || '-';
-}
+        <div class="botones-inferiores">
+            <button onclick="llamar()">📞 Llamar</button>
+            <button onclick="enviarPedido()">✅ Enviar Pedido</button>
+            <button onclick="reservar()">📅 Reservar</button>
+        </div>
+    </div>
 
-function checkNFCAvailability() {
-    if ('NDEFReader' in window) {
-        scanButton.disabled = false;
-        registerButton.disabled = false;
-        buscarButton.disabled = false;
-        return true;
-    }
-    scanButton.disabled = true;
-    registerButton.disabled = true;
-    buscarButton.disabled = true;
-    updateStatus('Tu dispositivo o navegador no soporta NFC.', true);
-    return false;
-}
-// Función para el botón buscar
-buscarButton.addEventListener('click', () => {
-    buscarContainer.classList.toggle('visible');
-    if (registerContainer.classList.contains('visible')) {
-        registerContainer.classList.remove('visible');
-    }
-});
-// Función para el botón buscar
-buscarOkButton.addEventListener('click', async () => {
-    const name = buscarNameInput.value.trim();
-    const phone = buscarPhoneInput.value.trim();
-    const email = buscarEmailInput.value.trim();
+    <script>
+        let usuario = null;
+        let carrito = [];
+        let menuData = {};
 
-    if (!name || !phone || !email) {
-        updateStatus('Por favor, completa todos los campos de búsqueda', true);
-        return;
-    }
-
-    const searchData = {
-        name: name,
-        phone: phone,
-        email: email
-    };
-
-    try {
-        // Enviar datos al webhook con la etiqueta buscarCliente
-        const timestamp = new Date().toISOString();
-        const url = new URL('https://neurofay.app.n8n.cloud/webhook/c98e51d1-3784-4967-8878-f204e4867f4f');
-        url.searchParams.append('text', 'buscarCLIENTE ' + JSON.stringify(searchData));
-        url.searchParams.append('timestamp', timestamp);
-        url.searchParams.append('action', 'buscarCliente');
-
-        const response = await fetch(url, {
-            method: 'GET',
-        });
-
-       const clientData = await response.json();
-// Extraer y parsear los datos del objeto anidado
-const parsedClientData = JSON.parse(clientData[0].output);
-
-// Actualizar la información en el bloque de información
-updateInfoBlock({
-    text: parsedClientData,
-    serialNumber: parsedClientData.serialNumber || '-',
-    timestamp: parsedClientData.timestamp
-});
-
-        updateStatus('Cliente encontrado. Acerque el chip para grabar cliente', false);
-
-        // Configurar el escritor NFC para grabar los datos
-        const ndef = new NDEFReader();
-        await ndef.scan();
-
-        ndef.addEventListener("reading", async () => {
-            try {
-               const dataToWrite = {
-    name: parsedClientData.name,
-    phone: parsedClientData.phone,
-    email: parsedClientData.email,
-    direccion: parsedClientData.direccion,
-    descuento: parsedClientData.descuento
-};
-
-                await ndef.write({
-                    records: [{
-                        recordType: "text",
-                        data: JSON.stringify(dataToWrite)
-                    }]
-                });
-
-                updateStatus('Datos grabados correctamente en el chip ✓');
-                if ('vibrate' in navigator) {
-                    navigator.vibrate(200);
-                }
-
-                // Limpiar el formulario y cerrar el contenedor de búsqueda
-                setTimeout(() => {
-                    buscarNameInput.value = '';
-                    buscarPhoneInput.value = '';
-                    buscarEmailInput.value = '';
-                    buscarContainer.classList.remove('visible');
-                    updateStatus('');
-                }, 3000);
-
-            } catch (error) {
-                console.error('Error al escribir en el chip:', error);
-                updateStatus('Error al escribir en el chip NFC', true);
-            }
-        });
-
-    } catch (error) {
-        console.error('Error en la búsqueda:', error);
-        updateStatus('Error al buscar el cliente', true);
-    }
-});
-
-// Función para el botón registrar
-registerButton.addEventListener('click', () => {
-    registerContainer.classList.toggle('visible');
-    if (buscarContainer.classList.contains('visible')) {
-        buscarContainer.classList.remove('visible');
-    }
-});
-
-// Función para registrar nuevo cliente
-okButton.addEventListener('click', async () => {
-    const name = clientNameInput.value.trim();
-    const phone = clientPhoneInput.value.trim();
-    const email = clientEmailInput.value.trim();
-    const direccion = clientDireccionInput.value.trim();
-    const descuento = descuentoAplicadoInput.value.trim();
-
-    if (!name || !phone || !email || !direccion || !descuento) {
-        updateStatus('Por favor, completa todos los campos', true);
-        return;
-    }
-
-    const userData = {
-        name: name,
-        phone: phone,
-        email: email,
-        direccion: direccion,
-        descuento: descuento
-    };
-
-    try {
-        updateStatus('Acerca el chip NFC para grabar...');
-        const ndef = new NDEFReader();
-        await ndef.scan();
-
-        ndef.addEventListener("reading", async () => {
-            try {
-                await ndef.write({
-                    records: [{
-                        recordType: "text",
-                        data: JSON.stringify(userData)
-                    }]
-                });
-
-                // Enviar datos al webhook con la etiqueta registrarCLIENTE
-                const timestamp = new Date().toISOString();
-                const url = new URL('https://neurofay.app.n8n.cloud/webhook/c98e51d1-3784-4967-8878-f204e4867f4f');
-                url.searchParams.append('text', 'registrarCLIENTE ' + JSON.stringify(userData));
-                url.searchParams.append('timestamp', timestamp);
-                url.searchParams.append('action', 'registrarNuevoCliente');
-
-                await fetch(url, {
-                    method: 'GET',
-                });
-                
-                updateStatus('Cliente registrado correctamente ✓');
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                updateStatus('Datos enviados al servidor ✓');
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                updateStatus('Proceso completado ✓', false);
-                
-                if ('vibrate' in navigator) {
-                    navigator.vibrate(200);
-                }
-                
-                setTimeout(() => {
-                    clientNameInput.value = '';
-                    clientPhoneInput.value = '';
-                    clientEmailInput.value = '';
-                    clientDireccionInput.value = '';
-                    descuentoAplicadoInput.value = '';
-                    registerContainer.classList.remove('visible');
-                    updateStatus('');
-                }, 3000);
-                
-            } catch (error) {
-                console.error('Error al escribir:', error);
-                updateStatus('Error al escribir en el chip NFC', true);
-            }
-        });
-
-    } catch (error) {
-        console.error('Error al registrar:', error);
-        if (error.name === 'NotAllowedError') {
-            updateStatus('Activa NFC en tu dispositivo y da permiso a la web', true);
-        } else if (error.name === 'NotReadableError') {
-            updateStatus('No se pudo escribir en el chip NFC', true);
-        } else {
-            updateStatus('Error al registrar el cliente', true);
-        }
-    }
-});
-
-async function startNFCScan() {
-    if (!checkNFCAvailability()) return;
-
-    try {
-        updateStatus('Iniciando escaneo NFC...');
-await new Promise(resolve => setTimeout(resolve, 2000)); // Añade esta línea
-const ndef = new NDEFReader();
-await ndef.scan();
-updateStatus('Acerca el chip NFC al dispositivo...');
-
-        ndef.addEventListener("reading", async ({ message, serialNumber }) => {
-    try {
-        const record = message.records[0];
-        const textDecoder = new TextDecoder();
-        const text = textDecoder.decode(record.data);
-        const timestamp = new Date().toISOString();
-
-        const data = {
-            text: text,
-            serialNumber: serialNumber,
-            timestamp: timestamp
-        };
-
-        updateInfoBlock(data);
-
-        try {
-            const url = new URL('https://neurofay.app.n8n.cloud/webhook/c98e51d1-3784-4967-8878-f204e4867f4f');
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
             
-                url.searchParams.append('text', 'actualizarCLIENTE ' + text); // Añadimos la etiqueta
-                url.searchParams.append('serialNumber', serialNumber);
-                url.searchParams.append('timestamp', timestamp);
-
-                const response = await fetch(url, {
-                    method: 'GET',
-              });
-    
-                const clientData = await response.json(); // Obtenemos la respuesta
-                updateInfoBlock({text: clientData}); // Actualizamos con los datos nuevos
-    
-                    updateStatus(`Datos actualizados correctamente`, false);
-                    if ('vibrate' in navigator) {
-                        navigator.vibrate(200);
+            try {
+                const response = await axios.get('https://api.baserow.io/api/database/rows/table/420235/', {
+                    params: {
+                        filter__field_3224473__equal: email,
+                        filter__field_3224275__equal: password,
+                        user_field_names: true
+                    },
+                    headers: {
+                        Authorization: 'Token YOUR_DATABASE_TOKEN'
                     }
-                } catch (fetchError) {
-                    console.error('Error de red:', fetchError);
-                    updateStatus('Error al enviar datos al servidor', true);
+                });
+
+                if(response.data.results.length > 0) {
+                    usuario = response.data.results[0];
+                    document.getElementById('loginPage').style.display = 'none';
+                    document.getElementById('mainPage').style.display = 'block';
+                    cargarDatosUsuario();
+                    cargarMenu();
+                } else {
+                    alert('Credenciales incorrectas');
                 }
             } catch (error) {
-                console.error('Error al procesar datos:', error);
-                updateStatus('Error al leer los datos del chip', true);
+                console.error(error);
+                alert('Error al iniciar sesión');
             }
-        });
-
-    } catch (error) {
-        console.error('Error de inicio:', error);
-        if (error.name === 'NotAllowedError') {
-            updateStatus('Activa NFC en tu dispositivo y da permiso a la web', true);
-        } else if (error.name === 'NotReadableError') {
-            updateStatus('No se pudo leer el chip NFC', true);
-        } else {
-            updateStatus('Error al iniciar el lector NFC', true);
         }
-    }
-}
 
-scanButton.addEventListener('click', startNFCScan);
+        function cargarDatosUsuario() {
+            document.getElementById('puntos').textContent = usuario['Puntos Cliente'];
+            document.getElementById('visitas').textContent = usuario['Número de pedidos'];
+        }
 
-checkNFCAvailability();
-</script>
+        async function cargarMenu() {
+            try {
+                const response = await axios.get('https://api.baserow.io/api/database/rows/table/420254/', {
+                    params: { user_field_names: true },
+                    headers: { Authorization: 'Token YOUR_DATABASE_TOKEN' }
+                });
+                
+                menuData = groupBy(response.data.results, 'Tipo');
+                generarDropdowns();
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        function groupBy(array, key) {
+            return array.reduce((result, item) => {
+                (result[item[key]] = result[item[key]] || []).push(item);
+                return result;
+            }, {});
+        }
+
+        function generarDropdowns() {
+            const contenedor = document.getElementById('menuDropdowns');
+            contenedor.innerHTML = '';
+            
+            for(const categoria in menuData) {
+                const dropdownHTML = `
+                    <div class="dropdown">
+                        <button class="dropdown-btn">${categoria}</button>
+                        <div class="dropdown-content">
+                            ${menuData[categoria].map(plato => `
+                                <div class="producto" onclick="agregarAlCarrito(${plato.id})">
+                                    ${plato.Nombre} - ${plato['Precio normal €']}€
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+                contenedor.innerHTML += dropdownHTML;
+            }
+
+            // Mostrar/ocultar dropdowns
+            document.querySelectorAll('.dropdown-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    this.nextElementSibling.style.display = 
+                        this.nextElementSibling.style.display === 'block' ? 'none' : 'block';
+                });
+            });
+        }
+
+        function agregarAlCarrito(platoId) {
+            const plato = Object.values(menuData).flat().find(p => p.id === platoId);
+            const existente = carrito.find(item => item.plato.id === platoId);
+            
+            if(existente) {
+                existente.cantidad++;
+            } else {
+                carrito.push({ plato, cantidad: 1 });
+            }
+            
+            actualizarCarrito();
+        }
+
+        function actualizarCarrito() {
+            const contenedor = document.getElementById('carrito');
+            contenedor.innerHTML = carrito.map(item => `
+                <div class="item-carrito">
+                    <div>${item.plato.Nombre}</div>
+                    <div class="cantidad-control">
+                        <button onclick="cambiarCantidad(${item.plato.id}, -1)">-</button>
+                        <span>${item.cantidad}</span>
+                        <button onclick="cambiarCantidad(${item.plato.id}, 1)">+</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function cambiarCantidad(platoId, delta) {
+            const item = carrito.find(item => item.plato.id === platoId);
+            item.cantidad += delta;
+            
+            if(item.cantidad < 1) {
+                carrito = carrito.filter(i => i !== item);
+            }
+            
+            actualizarCarrito();
+        }
+
+        async function enviarPedido() {
+            const pedido = {
+                usuario: usuario,
+                productos: carrito,
+                fecha: new Date().toISOString()
+            };
+
+            try {
+                const response = await axios.post('TU_WEBHOOK_PEDIDOS', {
+                    accion: 'realizarPedido',
+                    ...pedido
+                });
+                
+                if(response.data.ok) {
+                    alert('Pedido realizado con éxito');
+                    carrito = [];
+                    actualizarCarrito();
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Error al enviar el pedido');
+            }
+        }
+
+        function recuperarContraseña() {
+            const email = document.getElementById('email').value;
+            if(email) {
+                axios.post('TU_WEBHOOK_RECUPERACION', { email });
+                alert('Se ha enviado un correo para recuperar tu contraseña');
+            }
+        }
+
+        // Funciones auxiliares
+        function llamar() { window.location.href = 'tel:' + usuario.Teléfono; }
+        function reservar() { window.location.href = 'tu_url_reservas'; }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </body>
 </html>
