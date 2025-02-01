@@ -180,6 +180,58 @@
     </div>
 
 <script>
+    async function login() {
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value.trim();
+
+    if (!email || !password) {
+        alert('⚠️ Por favor, ingresa tu correo y contraseña.');
+        return;
+    }
+
+    try {
+        // Realizar la consulta a Baserow
+        const response = await axios.get(
+            `https://api.baserow.io/api/database/rows/table/${BASEROW_CONFIG.CLIENTES.ID_TABLA}/`, 
+            {
+                params: {
+                    user_field_names: true, // Para usar nombres reales de los campos
+                },
+                headers: {
+                    Authorization: `Token ${BASEROW_CONFIG.TOKEN}`
+                }
+            }
+        );
+
+        console.log("🔍 Respuesta completa de Baserow:", response.data); // Debug
+
+        // Buscar manualmente el usuario dentro de la respuesta
+        const usuario = response.data.results.find(user => 
+            user[BASEROW_CONFIG.CLIENTES.CAMPOS.EMAIL] === email &&
+            user[BASEROW_CONFIG.CLIENTES.CAMPOS.CONTRASEÑA] === password
+        );
+
+        if (usuario) {
+            console.log("✅ Usuario autenticado:", usuario);
+
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('mainPage').style.display = 'block';
+
+            // Mostrar datos del usuario
+            document.getElementById('puntos').textContent = usuario[BASEROW_CONFIG.CLIENTES.CAMPOS.PUNTOS] || '0';
+            document.getElementById('visitas').textContent = usuario[BASEROW_CONFIG.CLIENTES.CAMPOS.VISITAS] || '0';
+
+            await cargarMenu();
+        } else {
+            alert('⚠️ Credenciales incorrectas o usuario no existe');
+        }
+
+    } catch (error) {
+        console.error("🚨 Error en login:", error.response?.data || error.message);
+        alert('🚨 Error de conexión con el servidor');
+    }
+}
+
     function groupBy(array, key) {
         return array.reduce((result, item) => {
             (result[item[key]] = result[item[key]] || []).push(item);
