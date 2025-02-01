@@ -5,176 +5,280 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bocadito Coin</title>
     <style>
-        /* Estilos actualizados */
         :root {
             --azul: #2A5C82;
             --azul-claro: #E8F1F5;
         }
+        
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
 
-        .header {
+        body {
+            background: var(--azul-claro);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .logo {
+            width: 200px;
+            display: block;
+            margin: 20px auto;
+        }
+
+        .login-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        button {
+            background: var(--azul);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            margin: 5px 0;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+        }
+
+        .stat-box {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            flex: 1;
+            margin: 0 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .dropdown {
+            position: relative;
+            margin: 10px 0;
+        }
+
+        .dropdown-btn {
+            background: var(--azul);
+            color: white;
+            width: 100%;
+            text-align: left;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background: white;
+            width: 100%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 1;
+        }
+
+        .producto {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+
+        .carrito {
+            background: white;
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .item-carrito {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .cantidad-control {
             display: flex;
             align-items: center;
-            margin-bottom: 20px;
+            gap: 5px;
         }
 
-        .logo-small {
-            width: 80px;
-            margin-right: 15px;
+        .botones-inferiores {
+            display: flex;
+            gap: 10px;
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
         }
 
-        /* Añadido estilo para botón eliminar */
-        .btn-eliminar {
-            background: #dc3545 !important;
-            margin-left: 10px;
-            padding: 5px 10px;
-            width: auto;
+        .botones-inferiores button {
+            flex: 1;
         }
     </style>
 </head>
 <body>
-    <!-- Página Principal Actualizada -->
-    <div id="mainPage" class="container" style="display: none;">
-        <div class="header">
-            <img src="logo.png" alt="Logo" class="logo-small">
-            <div class="stats">
-                <div class="stat-box">
-                    <h3>Puntos</h3>
-                    <p id="puntos">0</p>
-                </div>
-                <div class="stat-box">
-                    <h3>Visitas</h3>
-                    <p id="visitas">0</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Menú Desplegable Mejorado -->
-        <div id="menuDropdowns"></div>
-
-        <!-- Carrito con Botón Eliminar -->
-        <div class="carrito" id="carrito">
-            <!-- Productos aparecerán aquí -->
-        </div>
-
-        <!-- Botones Actualizados -->
-        <div class="botones-inferiores">
-            <button onclick="window.location.href='tel:' + usuario?.Teléfono">📞 Llamar</button>
-            <button onclick="enviarPedido()">✅ Enviar Pedido</button>
-            <button onclick="borrarCarrito()">🗑️ Vaciar Carrito</button>
+    <!-- Página de Login -->
+    <div id="loginPage" class="container">
+        <img src="logo.png" alt="Logo" class="logo">
+        <div class="login-box">
+            <input type="email" id="email" placeholder="Correo electrónico">
+            <input type="password" id="password" placeholder="Contraseña">
+            <button onclick="login()">Iniciar sesión</button>
+            <button onclick="recuperarContraseña()">Recuperar contraseña</button>
         </div>
     </div>
 
-    <script>
-        // Configuración Actualizada con Debug
-        const BASEROW_CONFIG = {
-            CLIENTES: {
-                ID: 420235,
-                CAMPOS: {
-                    EMAIL: "Email",
-                    CONTRASEÑA: "Contraseña",
-                    PUNTOS: "Puntos Cliente",
-                    VISITAS: "Número de pedidos",
-                    TELEFONO: "Teléfono"
-                }
-            },
-            CARTA: {
-                ID: 420254,
-                CAMPOS: {
-                    NOMBRE: "Nombre",
-                    TIPO: "Tipo",
-                    PRECIO: "Precio normal €",
-                    ID: "id"
-                }
-            },
-            TOKEN: 'TU_TOKEN_AQUI'
-        };
+    <!-- Página Principal -->
+    <div id="mainPage" class="container" style="display: none;">
+        <div class="stats">
+            <div class="stat-box">
+                <h3>Puntos</h3>
+                <p id="puntos">0</p>
+            </div>
+            <div class="stat-box">
+                <h3>Visitas</h3>
+                <p id="visitas">0</p>
+            </div>
+        </div>
 
-        async function cargarMenu() {
-            try {
-                console.log("[DEBUG] Cargando menú...");
-                const response = await axios.get(
-                    `https://api.baserow.io/api/database/rows/table/${BASEROW_CONFIG.CARTA.ID}/`, 
-                    {
-                        params: {
-                            user_field_names: true,
-                            include: [
-                                BASEROW_CONFIG.CARTA.CAMPOS.ID,
-                                BASEROW_CONFIG.CARTA.CAMPOS.NOMBRE,
-                                BASEROW_CONFIG.CARTA.CAMPOS.TIPO,
-                                BASEROW_CONFIG.CARTA.CAMPOS.PRECIO
-                            ]
-                        },
-                        headers: {
-                            Authorization: `Token ${BASEROW_CONFIG.TOKEN}`
-                        }
+        <div id="menuDropdowns"></div>
+
+        <div class="carrito" id="carrito">
+            <!-- Productos del carrito aparecerán aquí -->
+        </div>
+
+        <div class="botones-inferiores">
+            <button onclick="llamar()">📞 Llamar</button>
+            <button onclick="enviarPedido()">✅ Enviar Pedido</button>
+            <button onclick="reservar()">📅 Reservar</button>
+        </div>
+    </div>
+
+<script>
+    // CONFIGURACIÓN ACTUALIZADA CON NOMBRES REALES DE CAMPOS
+    const BASEROW_CONFIG = {
+        CLIENTES: {
+            ID_TABLA: 420235,
+            CAMPOS: {
+                // NOMBRES REALES DE LOS CAMPOS EN BASEROW
+                EMAIL: "Email",         // Nombre real del campo (ID 3224265)
+                CONTRASEÑA: "Contraseña", // Nombre real (ID 3224275)
+                PUNTOS: "Puntos Cliente", // Nombre real (ID 3224318)
+                VISITAS: "Número de pedidos" // Nombre real (ID 3224308)
+            }
+        },
+        CARTA: {
+            ID_TABLA: 420254,
+            CAMPOS: {
+                NOMBRE: "Nombre",      // Nombre real (ID 3224509)
+                TIPO: "Tipo",          // Nombre real (ID 3224510)
+                PRECIO: "Precio normal €" // Nombre real (ID 3224516)
+            }
+        },
+        TOKEN: 'e1gj8PHAdmpO8c9ILZIqUU9sgT4LrhXD' // ← Token válido con permisos de lectura
+    };
+
+    async function login() {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        
+        try {
+            const response = await axios.get(
+                `https://api.baserow.io/api/database/rows/table/${BASEROW_CONFIG.CLIENTES.ID_TABLA}/`, 
+                {
+                    params: {
+                        // FILTROS POR NOMBRE REAL DE CAMPOS
+                        [`filter__${BASEROW_CONFIG.CLIENTES.CAMPOS.EMAIL}__equal`]: email,
+                        [`filter__${BASEROW_CONFIG.CLIENTES.CAMPOS.CONTRASEÑA}__equal`]: password,
+                        user_field_names: true,
+                        include: [  // Incluir campos necesarios
+                            BASEROW_CONFIG.CLIENTES.CAMPOS.EMAIL,
+                            BASEROW_CONFIG.CLIENTES.CAMPOS.PUNTOS,
+                            BASEROW_CONFIG.CLIENTES.CAMPOS.VISITAS,
+                            'Teléfono'  // Necesario para el botón de llamar
+                        ]
+                    },
+                    headers: {
+                        Authorization: `Token ${BASEROW_CONFIG.TOKEN}`
                     }
-                );
+                }
+            );
 
-                console.log("[DEBUG] Respuesta menú:", response.data);
-                menuData = groupBy(response.data.results, BASEROW_CONFIG.CARTA.CAMPOS.TIPO);
-                generarDropdowns();
-            } catch (error) {
-                console.error("[ERROR] Cargando menú:", error);
-                alert('Error cargando el menú. Por favor recarga la página.');
+            if(response.data.results.length > 0) {
+                usuario = response.data.results[0];
+                console.log("Usuario autenticado:", usuario); // Depuración
+                
+                document.getElementById('loginPage').style.display = 'none';
+                document.getElementById('mainPage').style.display = 'block';
+                
+                // Mostrar datos usando nombres reales
+                document.getElementById('puntos').textContent = usuario[BASEROW_CONFIG.CLIENTES.CAMPOS.PUNTOS];
+                document.getElementById('visitas').textContent = usuario[BASEROW_CONFIG.CLIENTES.CAMPOS.VISITAS];
+                
+                await cargarMenu();
+            } else {
+                alert('⚠️ Credenciales incorrectas o usuario no existe');
             }
+        } catch (error) {
+            console.error("Error completo:", error.response?.data || error.message);
+            alert('🚨 Error de conexión con el servidor');
         }
+    }
 
-        function generarDropdowns() {
-            const contenedor = document.getElementById('menuDropdowns');
-            contenedor.innerHTML = '';
-
-            for (const categoria in menuData) {
-                const dropdownHTML = `
-                    <div class="dropdown">
-                        <button class="dropdown-btn">${categoria}</button>
-                        <div class="dropdown-content">
-                            ${menuData[categoria].map(plato => `
-                                <div class="producto" onclick="agregarAlCarrito(${plato[BASEROW_CONFIG.CARTA.CAMPOS.ID]})">
-                                    ${plato[BASEROW_CONFIG.CARTA.CAMPOS.NOMBRE]} - 
-                                    ${plato[BASEROW_CONFIG.CARTA.CAMPOS.PRECIO]}€
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                `;
-                contenedor.innerHTML += dropdownHTML;
-            }
-
-            // Activar dropdowns
-            document.querySelectorAll('.dropdown-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const content = this.nextElementSibling;
-                    content.style.display = content.style.display === 'block' ? 'none' : 'block';
-                });
-            });
+    async function cargarMenu() {
+        try {
+            const response = await axios.get(
+                `https://api.baserow.io/api/database/rows/table/${BASEROW_CONFIG.CARTA.ID_TABLA}/`, 
+                {
+                    params: { 
+                        user_field_names: true,
+                        include: [  // Solo campos necesarios
+                            BASEROW_CONFIG.CARTA.CAMPOS.NOMBRE,
+                            BASEROW_CONFIG.CARTA.CAMPOS.TIPO,
+                            BASEROW_CONFIG.CARTA.CAMPOS.PRECIO
+                        ]
+                    },
+                    headers: { 
+                        Authorization: `Token ${BASEROW_CONFIG.TOKEN}` 
+                    }
+                }
+            );
+            
+            console.log("Menú cargado:", response.data); // Depuración
+            menuData = groupBy(response.data.results, BASEROW_CONFIG.CARTA.CAMPOS.TIPO);
+            generarDropdowns();
+        } catch (error) {
+            console.error("Error cargando menú:", error);
+            alert('Error cargando el menú');
         }
-
-        // Función para borrar productos individuales
-        function eliminarProducto(platoId) {
-            carrito = carrito.filter(item => item.plato.id !== platoId);
-            actualizarCarrito();
-        }
-
-        // Función para vaciar todo el carrito
-        function borrarCarrito() {
-            carrito = [];
-            actualizarCarrito();
-        }
-
-        function actualizarCarrito() {
-            const contenedor = document.getElementById('carrito');
-            contenedor.innerHTML = carrito.map(item => `
-                <div class="item-carrito">
-                    <div>${item.plato.nombre}</div>
-                    <div class="cantidad-control">
-                        <button onclick="cambiarCantidad(${item.plato.id}, -1)">-</button>
-                        <span>${item.cantidad}</span>
-                        <button onclick="cambiarCantidad(${item.plato.id}, 1)">+</button>
-                        <button class="btn-eliminar" onclick="eliminarProducto(${item.plato.id})">Eliminar</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-    </script>
+    }
+</script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    Diseñado por NeuroFay
 </body>
 </html>
