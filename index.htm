@@ -180,74 +180,11 @@
     </div>
 
 <script>
-    // CONFIGURACIÓN ACTUALIZADA CON NOMBRES REALES DE CAMPOS
-    const BASEROW_CONFIG = {
-        CLIENTES: {
-            ID_TABLA: 420235,
-            CAMPOS: {
-                // NOMBRES REALES DE LOS CAMPOS EN BASEROW
-                EMAIL: "Email",         // Nombre real del campo (ID 3224265)
-                CONTRASEÑA: "Contraseña", // Nombre real (ID 3224275)
-                PUNTOS: "Puntos Cliente", // Nombre real (ID 3224318)
-                VISITAS: "Número de pedidos" // Nombre real (ID 3224308)
-            }
-        },
-        CARTA: {
-            ID_TABLA: 420254,
-            CAMPOS: {
-                NOMBRE: "Nombre",      // Nombre real (ID 3224509)
-                TIPO: "Tipo",          // Nombre real (ID 3224510)
-                PRECIO: "Precio normal €" // Nombre real (ID 3224516)
-            }
-        },
-        TOKEN: 'e1gj8PHAdmpO8c9ILZIqUU9sgT4LrhXD' // ← Token válido con permisos de lectura
-    };
-
-    async function login() {
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        
-        try {
-            const response = await axios.get(
-                `https://api.baserow.io/api/database/rows/table/${BASEROW_CONFIG.CLIENTES.ID_TABLA}/`, 
-                {
-                    params: {
-                        // FILTROS POR NOMBRE REAL DE CAMPOS
-                        [`filter__${BASEROW_CONFIG.CLIENTES.CAMPOS.EMAIL}__equal`]: email,
-                        [`filter__${BASEROW_CONFIG.CLIENTES.CAMPOS.CONTRASEÑA}__equal`]: password,
-                        user_field_names: true,
-                        include: [  // Incluir campos necesarios
-                            BASEROW_CONFIG.CLIENTES.CAMPOS.EMAIL,
-                            BASEROW_CONFIG.CLIENTES.CAMPOS.PUNTOS,
-                            BASEROW_CONFIG.CLIENTES.CAMPOS.VISITAS,
-                            'Teléfono'  // Necesario para el botón de llamar
-                        ]
-                    },
-                    headers: {
-                        Authorization: `Token ${BASEROW_CONFIG.TOKEN}`
-                    }
-                }
-            );
-
-            if(response.data.results.length > 0) {
-                usuario = response.data.results[0];
-                console.log("Usuario autenticado:", usuario); // Depuración
-                
-                document.getElementById('loginPage').style.display = 'none';
-                document.getElementById('mainPage').style.display = 'block';
-                
-                // Mostrar datos usando nombres reales
-                document.getElementById('puntos').textContent = usuario[BASEROW_CONFIG.CLIENTES.CAMPOS.PUNTOS];
-                document.getElementById('visitas').textContent = usuario[BASEROW_CONFIG.CLIENTES.CAMPOS.VISITAS];
-                
-                await cargarMenu();
-            } else {
-                alert('⚠️ Credenciales incorrectas o usuario no existe');
-            }
-        } catch (error) {
-            console.error("Error completo:", error.response?.data || error.message);
-            alert('🚨 Error de conexión con el servidor');
-        }
+    function groupBy(array, key) {
+        return array.reduce((result, item) => {
+            (result[item[key]] = result[item[key]] || []).push(item);
+            return result;
+        }, {});
     }
 
     async function cargarMenu() {
@@ -257,7 +194,7 @@
                 {
                     params: { 
                         user_field_names: true,
-                        include: [  // Solo campos necesarios
+                        include: [
                             BASEROW_CONFIG.CARTA.CAMPOS.NOMBRE,
                             BASEROW_CONFIG.CARTA.CAMPOS.TIPO,
                             BASEROW_CONFIG.CARTA.CAMPOS.PRECIO
@@ -268,17 +205,72 @@
                     }
                 }
             );
-            
-            console.log("Menú cargado:", response.data); // Depuración
+
+            console.log("Menú cargado:", response.data.results); // Depuración
+
+            // Verifica si la respuesta contiene datos
+            if (response.data.results.length === 0) {
+                alert("⚠️ No hay productos disponibles en el menú.");
+                return;
+            }
+
+            // Agrupar los productos por su tipo
             menuData = groupBy(response.data.results, BASEROW_CONFIG.CARTA.CAMPOS.TIPO);
-            generarDropdowns();
+
+            // Generar los dropdowns en la interfaz
+            generarDropdowns(menuData);
         } catch (error) {
             console.error("Error cargando menú:", error);
             alert('Error cargando el menú');
         }
     }
+
+    function generarDropdowns(menuData) {
+        const menuContainer = document.getElementById("menuDropdowns");
+        menuContainer.innerHTML = ""; // Limpiar contenido previo
+
+        Object.keys(menuData).forEach(tipo => {
+            const dropdown = document.createElement("div");
+            dropdown.classList.add("dropdown");
+
+            const dropdownBtn = document.createElement("button");
+            dropdownBtn.classList.add("dropdown-btn");
+            dropdownBtn.textContent = tipo;
+            dropdownBtn.onclick = function () {
+                const content = this.nextElementSibling;
+                content.style.display = content.style.display === "block" ? "none" : "block";
+            };
+
+            const dropdownContent = document.createElement("div");
+            dropdownContent.classList.add("dropdown-content");
+
+            menuData[tipo].forEach(producto => {
+                const item = document.createElement("div");
+                item.classList.add("producto");
+                item.textContent = `${producto[BASEROW_CONFIG.CARTA.CAMPOS.NOMBRE]} - ${producto[BASEROW_CONFIG.CARTA.CAMPOS.PRECIO]}€`;
+                item.onclick = () => agregarAlCarrito(producto);
+                dropdownContent.appendChild(item);
+            });
+
+            dropdown.appendChild(dropdownBtn);
+            dropdown.appendChild(dropdownContent);
+            menuContainer.appendChild(dropdown);
+        });
+    }
+
+    function agregarAlCarrito(producto) {
+        const carrito = document.getElementById("carrito");
+
+        const itemCarrito = document.createElement("div");
+        itemCarrito.classList.add("item-carrito");
+        itemCarrito.innerHTML = `
+            <span>${producto[BASEROW_CONFIG.CARTA.CAMPOS.NOMBRE]}</span>
+            <span>${producto[BASEROW_CONFIG.CARTA.CAMPOS.PRECIO]}€</span>
+        `;
+
+        carrito.appendChild(itemCarrito);
+    }
 </script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    Diseñado por NeuroFay
 </body>
 </html>
