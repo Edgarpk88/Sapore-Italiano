@@ -37,8 +37,12 @@
       border-radius: 6px; overflow-x: auto; white-space: nowrap;
       max-width: 48%;
     }
+    /* Limitar altura y habilitar scroll vertical */
+    #users { max-height: 50px; overflow-y: auto; }
+    #log { max-height: 80px; overflow-y: auto; }
+
     #users strong, #log strong { margin-right: 4px; }
-    #users-list, #log-list { list-style: none; padding-left: 0; }
+    #users-list, #log-list { list-style: none; padding-left: 0; margin: 4px 0 0 0; }
     #users-list li, #log-list li { margin-bottom: 4px; }
     #main-chat {
       flex: 1; padding: 10px; background: var(--white);
@@ -46,7 +50,7 @@
     }
     .message {
       position: relative;
-      margin-bottom: 16px; padding: 12px 16px;
+      margin-bottom: 20px; padding: 12px 16px;
       background: var(--secondary); border-radius: 8px;
       word-break: break-word;
     }
@@ -98,7 +102,7 @@
     <div id="main-chat"></div>
     <div id="input-container">
       <label class="btn-circle">
-        📷<input id="file-input" type="file" accept="image/*,audio/*" capture onchange="sendFile()">
+        📷<input id="file-input" type="file" accept="image/*" capture="environment" onchange="sendFile()">
       </label>
       <input id="message-input" type="text" placeholder="Escribe tu mensaje…">
       <button class="btn-circle" onclick="sendMessage()">➤</button>
