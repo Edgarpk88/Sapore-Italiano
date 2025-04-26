@@ -61,29 +61,34 @@
       height: 100%;
     }
 
-    #top-panels {
+    #top-info {
       display: flex;
-      flex: 1;
-      overflow: hidden;
       flex-direction: row;
-    }
-
-    #messages, #users, #log {
-      background-color: var(--white);
-      border-radius: 10px;
-      margin: 8px;
-      padding: 10px;
-      overflow-y: auto;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    #messages {
-      flex: 3;
+      justify-content: space-around;
+      background-color: var(--secondary-color);
+      padding: 8px;
     }
 
     #users, #log {
+      background-color: var(--white);
+      border-radius: 8px;
+      padding: 5px;
+      width: 48%;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      font-size: 0.85em;
+    }
+
+    #main-chat {
       flex: 1;
-      font-size: 0.9em;
+      display: flex;
+      flex-direction: column;
+      margin: 8px;
+      background-color: var(--white);
+      border-radius: 10px;
+      padding: 10px;
+      overflow-y: auto;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
 
     #input-container {
@@ -101,18 +106,23 @@
       margin-right: 8px;
     }
 
-    button, input[type="file"] {
+    #send-button, #upload-button {
       background-color: var(--primary-color);
       color: var(--white);
       border: none;
-      border-radius: 8px;
-      padding: 10px;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       cursor: pointer;
-      font-weight: bold;
+      font-size: 18px;
+      margin-left: 5px;
     }
 
-    button:hover {
-      background-color: #357ABD;
+    #upload-button input {
+      display: none;
     }
 
     .message {
@@ -120,6 +130,7 @@
       padding: 8px;
       background-color: var(--secondary-color);
       border-radius: 8px;
+      word-break: break-word;
     }
 
     img, audio {
@@ -128,14 +139,27 @@
       border-radius: 8px;
     }
 
-    /* Responsivo para móviles */
+    /* Responsive para móviles */
     @media (max-width: 768px) {
-      #top-panels {
+      #top-info {
         flex-direction: column;
+        align-items: center;
       }
       #users, #log {
-        flex: none;
-        height: 100px;
+        width: 90%;
+        margin-bottom: 10px;
+      }
+      #input-container {
+        flex-wrap: wrap;
+      }
+      #message-input {
+        width: 100%;
+        margin-bottom: 8px;
+      }
+      #send-button, #upload-button {
+        width: 100%;
+        height: 40px;
+        border-radius: 8px;
       }
     }
   </style>
@@ -150,22 +174,27 @@
 </div>
 
 <div id="chat-container">
-  <div id="top-panels">
-    <div id="messages"></div>
+  <div id="top-info">
     <div id="users">
-      <h3>Integrantes</h3>
+      <h4>Integrantes</h4>
       <ul id="user-list"></ul>
     </div>
     <div id="log">
-      <h3>Entradas</h3>
+      <h4>Entradas</h4>
       <ul id="entry-log"></ul>
     </div>
   </div>
 
+  <div id="main-chat" id="messages"></div>
+
   <div id="input-container" style="display:none;">
     <input type="text" id="message-input" placeholder="Escribe tu mensaje...">
-    <button onclick="sendMessage()">Enviar</button>
-    <input type="file" id="file-input" accept="image/*,audio/*" onchange="sendFile()">
+    <button id="send-button" onclick="sendMessage()">➤</button>
+
+    <label id="upload-button">
+      📎
+      <input type="file" id="file-input" accept="image/*,audio/*" onchange="sendFile()">
+    </label>
   </div>
 </div>
 
@@ -243,7 +272,7 @@
   }
 
   function loadMessages() {
-    const messagesDiv = document.getElementById('messages');
+    const messagesDiv = document.getElementById('main-chat');
     messagesDiv.innerHTML = "";
     const messages = JSON.parse(localStorage.getItem('chat_messages') || "[]");
     messages.forEach(m => {
