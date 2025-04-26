@@ -1,223 +1,280 @@
 <!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Chat Privado</title>
-  <style>
-    :root {
-      --primary: #4a90e2;
-      --secondary: #e6f0fa;
-      --bg: #f4faff;
-      --text: #333;
-      --white: #fff;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html { font-size: 16px; }
-    body { font-family: sans-serif; background: var(--bg); display: flex; flex-direction: column; height: 100vh; color: var(--text); }
-    /* LOGIN */
-    #login { flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; padding:20px; }
-    #login input, #login button { width:100%; max-width:300px; margin:8px 0; padding:12px; border:1px solid var(--primary); border-radius:6px; font-size: 1rem; }
-    #login button { background:var(--primary); color:var(--white); cursor:pointer; }
-    /* CHAT */
-    #chat-container { display:none; flex:1; flex-direction:column; position:relative; }
-    #top-info { display:flex; justify-content:space-between; padding:4px 12px; background:var(--secondary); font-size:0.8rem; }
-    #users, #log { background:var(--white); padding:4px 8px; border-radius:6px; overflow-y:auto; }
-    #users { max-width:48%; max-height:80px; }
-    #log { max-width:48%; max-height:60px; }
-    #users-list, #log-list { list-style:none; padding-left:0; margin-top:4px; }
-    #users-list li, #log-list li { margin-bottom:2px; font-size:0.9rem; }
-    #main-chat { flex:1; padding:10px; background:var(--white); overflow-y:auto; margin-bottom:56px; font-size:1rem; }
-    .message { position:relative; margin-bottom:16px; padding:10px 14px; background:var(--secondary); border-radius:8px; word-break:break-word; }
-    .self { background:#c5e3fc; align-self:flex-end; }
-    .time { position:absolute; bottom:4px; right:8px; font-size:0.7rem; color:#555; }
-    #input-container { display:flex; align-items:center; padding:6px 8px; background:var(--secondary); position:absolute; bottom:0; width:100%; }
-    #message-input { flex:1; padding:8px; border:1px solid var(--primary); border-radius:20px; outline:none; font-size:1rem; }
-    .btn-circle { width:36px; height:36px; margin-left:6px; border:none; border-radius:50%; background:var(--primary); color:var(--white); font-size:18px; display:flex; align-items:center; justify-content:center; cursor:pointer; }
-    .btn-circle input { display:none; }
-    img.chat-img { max-width:100%; margin-top:6px; border-radius:6px; cursor:pointer; }
-    audio { width:100%; margin-top:6px; }
-    @media(max-width:600px) { #top-info { flex-direction:column; font-size:0.75rem; } #users, #log { max-width:100%; margin-bottom:4px; } }
-    /* Modal imagen */
-    #imgModal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); display:none; align-items:center; justify-content:center; }
-    #imgModal img { max-width:90%; max-height:90%; border-radius:8px; }
-  </style>
-</head>
-<body>
-  <!-- LOGIN -->
-  <div id="login">
-    <h2>🔒 Campo Magnético</h2>
-    <input id="pwd" type="password" placeholder="Contraseña">
-    <button onclick="checkPassword()">Entrar</button>
-  </div>
-  <!-- CHAT -->
-  <div id="chat-container">
-    <div id="top-info">
-      <div id="users"><strong>👥 Activos:</strong><ul id="users-list"></ul></div>
-      <div id="log"><strong>🕒 Log (48h):</strong><ul id="log-list"></ul></div>
-    </div>
-    <div id="main-chat"></div>
-    <div id="input-container">
-      <label class="btn-circle">
-        📷<input id="file-input" type="file" accept="image/*">
-      </label>
-      <button id="emoji-btn" class="btn-circle">😃</button>
-      <button id="record-btn" class="btn-circle">🎤</button>
-      <input id="message-input" type="text" placeholder="Escribe tu mensaje…" onkeyup="if(event.key==='Enter') sendMessage();">
-      <button class="btn-circle" onclick="sendMessage()">➤</button>
-    </div>
-  </div>
-  <!-- Modal imagen -->
-  <div id="imgModal" onclick="closeModal()"><img id="modalImg"></div>
-  <!-- Libraries -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@joeattardi/emoji-button@4.6.0/dist/index.min.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      // Firebase init
-      const firebaseConfig = {
-        apiKey: "AIzaSyCGIgoiTmjt3CsAGTx0_2sSVVVDUrAJm0c",
-        authDomain: "chataurora-cb895.firebaseapp.com",
-        databaseURL: "https://chataurora-cb895-default-rtdb.europe-west1.firebasedatabase.app",
-        projectId: "chataurora-cb895",
-        storageBucket: "chataurora-cb895.appspot.com",
-        messagingSenderId: "908639294107",
-        appId: "1:908639294107:web:2497ba35a0e3d84c882c3e"
-      };
-      firebase.initializeApp(firebaseConfig);
-      const db = firebase.database();
-      const storage = firebase.storage();
-      let username = localStorage.getItem('chat_username');
-      let mediaRecorder, audioChunks = [];
-
-      // File input listener
-      const fileInput = document.getElementById('file-input');
-      fileInput.addEventListener('change', sendFile);
-
-      // Emoji Picker
-      const picker = new EmojiButton();
-      const emojiBtn = document.getElementById('emoji-btn');
-      picker.on('emoji', emoji => {
-        const input = document.getElementById('message-input');
-        input.value += emoji;
-        input.focus();
-      });
-      emojiBtn.addEventListener('click', () => picker.togglePicker(emojiBtn));
-
-      // Recording
-      document.getElementById('record-btn').addEventListener('click', toggleRecording);
-
-      function toggleRecording() {
-        if (!mediaRecorder || mediaRecorder.state === 'inactive') {
-          navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-            mediaRecorder = new MediaRecorder(stream);
-            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-            mediaRecorder.onstop = sendAudio;
-            audioChunks = [];
-            mediaRecorder.start();
-            document.getElementById('record-btn').textContent = '⏹';
-          });
-        } else {
-          mediaRecorder.stop();
-          document.getElementById('record-btn').textContent = '🎤';
-        }
-      }
-
-      function sendAudio() {
-        const blob = new Blob(audioChunks, { type: 'audio/webm' });
-        const path = `temp/${Date.now()}_audio.webm`;
-        const ref = storage.ref(path);
-        ref.put(blob).then(() => ref.getDownloadURL()).then(url => {
-          db.ref('messages').push({ username, type: 'audio', fileUrl: url, timestamp: Date.now() });
-          setTimeout(() => ref.delete(), 5 * 60 * 1000);
-        }).catch(console.error);
-      }
-
-      function sendFile() {
-        const f = fileInput.files[0];
-        if (!f) return;
-        const ref = storage.ref(`temp/${Date.now()}_${f.name}`);
-        ref.put(f).then(() => ref.getDownloadURL()).then(url => {
-          db.ref('messages').push({ username, type: 'image', fileUrl: url, timestamp: Date.now() });
-          fileInput.value = '';
-        }).catch(console.error);
-      }
-
-      function sendMessage() {
-        const input = document.getElementById('message-input');
-        const text = input.value.trim();
-        if (!text) return;
-        db.ref('messages').push({ username, type: 'text', text, timestamp: Date.now() });
-        input.value = '';
-      }
-
-      // Password & Chat Start
-      window.checkPassword = function() {
-        const pwd = document.getElementById('pwd').value;
-        if (pwd !== 'aurora78') { alert('Contraseña incorrecta'); return; }
-        document.getElementById('login').style.display = 'none';
-        document.getElementById('chat-container').style.display = 'flex';
-        if (!username) {
-          username = prompt('¿Cómo te llamas?') || 'Anónimo';
-          localStorage.setItem('chat_username', username);
-        }
-        startChat();
-      };
-
-      function startChat() {
-        const meRef = db.ref('users/' + username);
-        meRef.set(true);
-        meRef.onDisconnect().remove();
-        cleanLogs();
-        logEvent(username + ' ha entrado');
-
-        db.ref('messages').orderByChild('timestamp').once('value', snap => {
-          snap.forEach(ch => displayMessage(ch.key, ch.val()));
-          scrollBottom();
-        });
-        db.ref('messages').orderByChild('timestamp').startAt(Date.now()).on('child_added', ch => {
-          displayMessage(ch.key, ch.val()); scrollBottom();
-        });
-        db.ref('users').on('value', snap => {
-          const ul = document.getElementById('users-list'); ul.innerHTML = '';
-          if (snap.val()) Object.keys(snap.val()).forEach(u => {
-            const li = document.createElement('li'); li.textContent = u; ul.appendChild(li);
-          });
-        });
-        db.ref('logs').orderByChild('timestamp').startAt(Date.now() - 48*3600*1000).on('child_added', s => {
-          const e = s.val(); const t = new Date(e.timestamp).toLocaleTimeString();
-          const li = document.createElement('li'); li.textContent = `[${t}] ${e.text}`;
-          document.getElementById('log-list').appendChild(li);
-        });
-      }
-
-      window.sendMessage = sendMessage;
-
-      function displayMessage(key, m) {
-        if (!m || !m.timestamp) return;
-        const container = document.createElement('div');
-        container.className = 'message ' + (m.username === username ? 'self' : '');
-        const ts = new Date(m.timestamp).toLocaleTimeString();
-        container.innerHTML = `<strong>${m.username}</strong><div class="time">${ts}</div>`;
-        if (m.type === 'text') container.innerHTML += `<div>${m.text}</div>`;
-        if (m.type === 'image') {
-          const img = document.createElement('img'); img.src = m.fileUrl; img.className = 'chat-img';
-          img.onclick = () => openModal(m.fileUrl, img); container.appendChild(img);
-        }
-        if (m.type === 'audio') {
-          const aud = document.createElement('audio'); aud.src = m.fileUrl; aud.controls = true; container.appendChild(aud);
-        }
-        document.getElementById('main-chat').appendChild(container);
-      }
-
-      function scrollBottom() { const chat = document.getElementById('main-chat'); chat.scrollTop = chat.scrollHeight; }
-      function logEvent(text) { db.ref('logs').push({ text, timestamp: Date.now() }); }
-      function cleanLogs() { db.ref('logs').once('value', snap => snap.forEach(ch => { if (Date.now()-ch.val().timestamp>48*3600*1000) ch.ref.remove(); })); }
-      function openModal(url, el) { const modal = document.getElementById('imgModal'); document.getElementById('modalImg').src = url; modal.style.display='flex'; modal.onclick=()=>{ closeModal(); el.remove(); }; }
-      function closeModal() { document.getElementById('imgModal').style.display='none'; }
-    });
-  </script>
-</body>
-</html>
+ <html lang="es">
+ <head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width,initial-scale=1">
+   <title>Chat Privado</title>
+   <style>
+     :root {
+       --primary: #4a90e2;
+       --secondary: #e6f0fa;
+       --bg: #f4faff;
+       --text: #333;
+       --white: #fff;
+     }
+     * { box-sizing: border-box; margin: 0; padding: 0; }
+     body { font-family: sans-serif; background: var(--bg); display: flex; flex-direction: column; height: 100vh; }
+     /* LOGIN */
+     #login { flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; padding:20px; }
+     #login input, #login button { width:100%; max-width:300px; margin:8px 0; padding:12px; border:1px solid var(--primary); border-radius:6px; }
+     #login button { background:var(--primary); color:var(--white); cursor:pointer; }
+     /* CHAT */
+     #chat-container { display:none; flex:1; flex-direction:column; position:relative; }
+     #top-info { display:flex; justify-content:space-between; padding:4px 12px; background:var(--secondary); font-size:0.8em; }
+     #users, #log { background:var(--white); padding:4px 8px; border-radius:6px; overflow-y:auto; }
+     #users { max-width:48%; max-height:80px; }
+     #log { max-width:48%; max-height:60px; }
+     #users-list, #log-list { list-style:none; padding-left:0; margin-top:4px; }
+     #users-list li, #log-list li { margin-bottom:2px; }
+     #main-chat { flex:1; padding:10px; background:var(--white); overflow-y:auto; margin-bottom:56px; }
+     .message { position:relative; margin-bottom:24px; padding:12px 16px; background:var(--secondary); border-radius:8px; word-break:break-word; }
+     .self { background:#c5e3fc; align-self:flex-end; }
+     .time { position:absolute; bottom:4px; right:8px; font-size:0.7em; color:#555; }
+     #input-container { display:flex; align-items:center; padding:4px 8px; background:var(--secondary); position:absolute; bottom:0; width:100%; }
+     #message-input { flex:1; padding:8px; border:1px solid var(--primary); border-radius:20px; outline:none; }
+     .btn-circle { width:36px; height:36px; margin-left:6px; border:none; border-radius:50%; background:var(--primary); color:var(--white); font-size:18px; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+     .btn-circle input { display:none; }
+     img { max-width:100%; margin-top:6px; border-radius:6px; cursor:pointer; }
+     audio { width:100%; margin-top:6px; }
+     @media(max-width:600px) { #top-info { flex-direction:column; font-size:0.75em; } #users, #log { max-width:100%; margin-bottom:4px; } }
+     /* Modal imagen */
+     #imgModal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); display:none; align-items:center; justify-content:center; }
+     #imgModal img { max-width:90%; max-height:90%; border-radius:8px; }
+   </style>
+ </head>
+ <body>
+   <!-- LOGIN -->
+   <div id="login">
+     <h2>🔒 Acceso al Chat</h2>
+     <h2>🔒 Campo Magnético</h2>
+     <input id="pwd" type="password" placeholder="Contraseña">
+     <button onclick="checkPassword()">Entrar</button>
+   </div>
+   <!-- CHAT -->
+   <div id="chat-container">
+     <div id="top-info">
+       <div id="users"><strong>👥 Activos:</strong><ul id="users-list"></ul></div>
+       <div id="log"><strong>🕒 Log (48h):</strong><ul id="log-list"></ul></div>
+     </div>
+     <div id="main-chat"></div>
+     <div id="input-container">
+       <label class="btn-circle">
+         📷<input id="file-input" type="file" accept="image/*" onchange="sendFile()">
+       </label>
+       <button id="emoji-btn" class="btn-circle">😃</button>
+       <button id="record-btn" class="btn-circle">🎤</button>
+       <input id="message-input" type="text" placeholder="Escribe tu mensaje…" onkeyup="if(event.key==='Enter') sendMessage();">
+       <button class="btn-circle" onclick="sendMessage()">➤</button>
+     </div>
+   </div>
+   <!-- Modal imagen -->
+   <div id="imgModal" onclick="closeModal()"><img id="modalImg"></div>
+   <!-- FIREBASE -->
+   <!-- Libraries -->
+   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+   <script src="https://cdn.jsdelivr.net/npm/@joeattardi/emoji-button@4.6.0/dist/index.min.js"></script>
+   <script>
+     const firebaseConfig = {
+       apiKey: "AIzaSyCGIgoiTmjt3CsAGTx0_2sSVVVDUrAJm0c",
+       authDomain: "chataurora-cb895.firebaseapp.com",
+       databaseURL: "https://chataurora-cb895-default-rtdb.europe-west1.firebasedatabase.app",
+       projectId: "chataurora-cb895",
+       storageBucket: "chataurora-cb895.appspot.com",
+       messagingSenderId: "908639294107",
+       appId: "1:908639294107:web:2497ba35a0e3d84c882c3e"
+     };
+     firebase.initializeApp(firebaseConfig);
+     const db = firebase.database();
+     const storage = firebase.storage();
+     let username = localStorage.getItem('chat_username');
+     let mediaRecorder, audioChunks = [];
+ 
+     // Emoji Picker
+     const picker = new EmojiButton.EmojiButton();
+     document.getElementById('emoji-btn').addEventListener('click', () => {
+       picker.togglePicker(document.getElementById('message-input'));
+     });
+     picker.on('emoji', emoji => {
+       const input = document.getElementById('message-input');
+       input.value += emoji;
+       input.focus();
+     });
+ 
+     document.getElementById('record-btn').onclick = toggleRecording;
+ 
+     function toggleRecording() {
+       if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+         navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+           mediaRecorder = new MediaRecorder(stream);
+           mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+           mediaRecorder.onstop = sendAudio;
+           audioChunks = [];
+           mediaRecorder.start();
+           document.getElementById('record-btn').textContent = '⏹';
+         });
+       } else {
+         mediaRecorder.stop();
+         document.getElementById('record-btn').textContent = '🎤';
+       }
+     }
+ 
+     function sendAudio() {
+       const blob = new Blob(audioChunks, { type: 'audio/webm' });
+       const path = `temp/${Date.now()}_audio.webm`;
+       const ref = storage.ref(path);
+       ref.put(blob).then(() => ref.getDownloadURL()).then(url => {
+         db.ref('messages').push({ username, type: 'audio', fileUrl: url, timestamp: Date.now() });
+         setTimeout(() => ref.delete(), 5 * 60 * 1000);
+       });
+     }
+ 
+     function sendFile() {
+       const f = document.getElementById('file-input').files[0];
+       const fileInput = document.getElementById('file-input');
+       const f = fileInput.files[0];
+       if (!f) return;
+       const ref = storage.ref(`temp/${Date.now()}_${f.name}`);
+       ref.put(f).then(() => ref.getDownloadURL()).then(url => {
+         db.ref('messages').push({ username, type: 'image', fileUrl: url, timestamp: Date.now() });
+         fileInput.value = '';
+         setTimeout(() => ref.delete(), 5 * 60 * 1000);
+       });
+     }
+ 
+     function sendMessage() {
+       const input = document.getElementById('message-input');
+       const text = input.value.trim();
+       if (!text) return;
+       db.ref('messages').push({ username, type: 'text', text, timestamp: Date.now() });
+       input.value = '';
+     }
+ 
+     function checkPassword() {
+       if (document.getElementById('pwd').value !== 'aurora78') {
+         return alert('Contraseña incorrecta');
+       }
+       const pwd = document.getElementById('pwd').value;
+       if (pwd !== 'aurora78') { alert('Contraseña incorrecta'); return; }
+       document.getElementById('login').style.display = 'none';
+       document.getElementById('chat-container').style.display = 'flex';
+       if (!username) {
+         username = prompt('¿Cómo te llamas?');
+         username = prompt('¿Cómo te llamas?') || 'Anónimo';
+         localStorage.setItem('chat_username', username);
+       }
+       startChat();
+     }
+ 
+     function startChat() {
+       const me = db.ref('users/' + username);
+       me.set(true);
+       me.onDisconnect().remove();
+       const meRef = db.ref('users/' + username);
+       meRef.set(true);
+       meRef.onDisconnect().remove();
+       cleanLogs();
+       logEvent(username + ' ha entrado');
+ 
+       db.ref('messages').orderByChild('timestamp').once('value', snap => {
+         snap.forEach(ch => displayMessage(ch.key, ch.val()));
+         scrollBottom();
+       });
+ 
+       db.ref('messages').orderByChild('timestamp').startAt(Date.now()).on('child_added', ch => {
+         displayMessage(ch.key, ch.val());
+         scrollBottom();
+       });
+ 
+       db.ref('users').on('value', snap => {
+         const ul = document.getElementById('users-list');
+         ul.innerHTML = '';
+         Object.keys(snap.val() || {}).forEach(u => {
+         if (snap.val()) Object.keys(snap.val()).forEach(u => {
+           const li = document.createElement('li');
+           li.textContent = u;
+           ul.appendChild(li);
+         });
+       });
+ 
+       db.ref('logs').orderByChild('timestamp').startAt(Date.now() - 48 * 3600 * 1000).on('child_added', s => {
+         const e = s.val();
+         const t = new Date(e.timestamp).toLocaleTimeString();
+         const li = document.createElement('li');
+         li.textContent = `[${t}] ${e.text}`;
+         document.getElementById('log-list').appendChild(li);
+       });
+       db.ref('logs').orderByChild('timestamp').startAt(Date.now() - 48 * 3600 * 1000)
+         .on('child_added', s => {
+           const e = s.val();
+           const t = new Date(e.timestamp).toLocaleTimeString();
+           const li = document.createElement('li');
+           li.textContent = `[${t}] ${e.text}`;
+           document.getElementById('log-list').appendChild(li);
+         });
+     }
+ 
+     function displayMessage(key, m) {
+       if (!m || !m.timestamp) return;
+       const c = document.createElement('div');
+       c.className = 'message ' + (m.username === username ? 'self' : '');
+       const container = document.createElement('div');
+       container.className = 'message ' + (m.username === username ? 'self' : '');
+       const ts = new Date(m.timestamp).toLocaleTimeString();
+       container.innerHTML = `<strong>${m.username}</strong><div class="time">${ts}</div>`;
+ 
+       if (m.type === 'text') {
+         c.innerHTML = `<strong>${m.username}</strong>: ${m.text}<div class="time">${ts}</div>`;
+         container.innerHTML += `<p>${m.text}</p>`;
+       } else if (m.type === 'image') {
+         const img = document.createElement('img');
+         img.src = m.fileUrl;
+         img.alt = 'Imagen enviada';
+         img.onclick = () => openModal(m.fileUrl, img);
+         c.innerHTML = `<strong>${m.username}</strong><div class="time">${ts}</div>`;
+         c.appendChild(img);
+         container.appendChild(img);
+       } else if (m.type === 'audio') {
+         const aud = document.createElement('audio');
+         aud.src = m.fileUrl;
+         aud.controls = true;
+         c.innerHTML = `<strong>${m.username}</strong><div class="time">${ts}</div>`;
+         c.appendChild(aud);
+         container.appendChild(aud);
+       }
+ 
+       document.getElementById('main-chat').appendChild(c);
+       document.getElementById('main-chat').appendChild(container);
+     }
+ 
+     function scrollBottom() {
+       const m = document.getElementById('main-chat');
+       m.scrollTop = m.scrollHeight;
+       const chat = document.getElementById('main-chat');
+       chat.scrollTop = chat.scrollHeight;
+     }
+ 
+     function logEvent(text) {
+       db.ref('logs').push({ text, timestamp: Date.now() });
+     }
+ 
+     function cleanLogs() {
+       db.ref('logs').once('value', snap => snap.forEach(ch => {
+         if (Date.now() - ch.val().timestamp > 48 * 3600 * 1000) ch.ref.remove();
+       }));
+     }
+ 
+     function openModal(url, el) {
+       const modal = document.getElementById('imgModal');
+       document.getElementById('modalImg').src = url;
+       modal.style.display = 'flex';
+       modal.onclick = () => { closeModal(); el.remove(); };
+     }
+ 
+     function closeModal() {
+       document.getElementById('imgModal').style.display = 'none';
+     }
+   </script>
+ </body>
+ </html>
