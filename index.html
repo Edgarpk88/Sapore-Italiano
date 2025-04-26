@@ -37,19 +37,22 @@
       border-radius: 6px; overflow-x: auto; white-space: nowrap;
       max-width: 48%;
     }
+    #users strong, #log strong { margin-right: 4px; }
+    #users-list, #log-list { list-style: none; padding-left: 0; }
+    #users-list li, #log-list li { margin-bottom: 4px; }
     #main-chat {
       flex: 1; padding: 10px; background: var(--white);
       overflow-y: auto; display: flex; flex-direction: column;
     }
     .message {
       position: relative;
-      margin-bottom: 8px; padding: 8px 12px;
+      margin-bottom: 16px; padding: 12px 16px;
       background: var(--secondary); border-radius: 8px;
       word-break: break-word;
     }
     .self { background: #c5e3fc; align-self: flex-end; }
     .time {
-      position: absolute; bottom: -14px; right: 8px;
+      position: absolute; bottom: 4px; right: 8px;
       font-size: 0.7em; color: #555;
     }
     #input-container {
@@ -89,13 +92,13 @@
   <!-- CHAT -->
   <div id="chat-container">
     <div id="top-info">
-      <div id="users">👥 …</div>
-      <div id="log">🕒 …</div>
+      <div id="users"><strong>👥 Activos:</strong><ul id="users-list"></ul></div>
+      <div id="log"><strong>🕒 Log (48h):</strong><ul id="log-list"></ul></div>
     </div>
     <div id="main-chat"></div>
     <div id="input-container">
       <label class="btn-circle">
-        📎<input id="file-input" type="file" accept="image/*,audio/*" onchange="sendFile()">
+        📷<input id="file-input" type="file" accept="image/*,audio/*" capture onchange="sendFile()">
       </label>
       <input id="message-input" type="text" placeholder="Escribe tu mensaje…">
       <button class="btn-circle" onclick="sendMessage()">➤</button>
@@ -123,9 +126,7 @@
     let username = localStorage.getItem('chat_username');
 
     function checkPassword() {
-      if (document.getElementById('pwd').value !== 'aurora78') {
-        return alert('Contraseña incorrecta');
-      }
+      if (document.getElementById('pwd').value !== 'aurora78') return alert('Contraseña incorrecta');
       document.getElementById('login').style.display = 'none';
       document.getElementById('chat-container').style.display = 'flex';
       if (!username) {
@@ -138,44 +139,33 @@
     function startChat() {
       // presencia
       const me = db.ref('users/' + username);
-      me.set(true);
-      me.onDisconnect().remove();
+      me.set(true); me.onDisconnect().remove();
 
-      // limpiar logs viejos
-      cleanLogs();  
-      logEvent(`${username} ha entrado`);
+      cleanLogs();  logEvent(`${username} ha entrado`);
 
-      // cargar historial
-      db.ref('messages')
-        .orderByChild('timestamp')
-        .once('value', snap => {
-          snap.forEach(ch => displayMessage(ch.key, ch.val()));
-          scrollBottom();
-        });
+      // historial mensajes
+      db.ref('messages').orderByChild('timestamp').once('value', snap => {
+        snap.forEach(ch => displayMessage(ch.key, ch.val())); scrollBottom();
+      });
 
-      // escuchar nuevos
-      db.ref('messages')
-        .orderByChild('timestamp')
-        .startAt(Date.now())
-        .on('child_added', ch => {
-          displayMessage(ch.key, ch.val());
-          scrollBottom();
-        });
+      // nuevos mensajes
+      db.ref('messages').orderByChild('timestamp').startAt(Date.now())
+        .on('child_added', ch => { displayMessage(ch.key, ch.val()); scrollBottom(); });
 
-      // usuarios
+      // usuarios activos
       db.ref('users').on('value', snap => {
-        const us = Object.keys(snap.val()||{});
-        document.getElementById('users').innerText = '👥 ' + us.join(', ');
+        const ul = document.getElementById('users-list'); ul.innerHTML = '';
+        Object.keys(snap.val()||{}).forEach(u => {
+          const li = document.createElement('li'); li.textContent = u; ul.appendChild(li);
+        });
       });
 
       // log 48h
-      db.ref('logs')
-        .orderByChild('timestamp')
-        .startAt(Date.now() - 48*3600*1000)
+      db.ref('logs').orderByChild('timestamp').startAt(Date.now()-48*3600*1000)
         .on('child_added', s => {
-          const e = s.val();
-          const t = new Date(e.timestamp).toLocaleTimeString();
-          document.getElementById('log').innerText += `[${t}] ${e.text} `;
+          const e = s.val(), t = new Date(e.timestamp).toLocaleTimeString();
+          const li = document.createElement('li'); li.textContent = `[${t}] ${e.text}`;
+          document.getElementById('log-list').appendChild(li);
         });
     }
 
@@ -187,60 +177,37 @@
     }
 
     function sendFile() {
-      const f = document.getElementById('file-input').files[0];
-      if (!f) return;
-      const path = `temp/${Date.now()}_${f.name}`;
-      const ref = storage.ref(path);
-      ref.put(f).then(() => ref.getDownloadURL()).then(url => {
+      const f = document.getElementById('file-input').files[0]; if (!f) return;
+      const path = `temp/${Date.now()}_${f.name}`, ref = storage.ref(path);
+      ref.put(f).then(()=> ref.getDownloadURL()).then(url => {
         const tipo = f.type.startsWith('audio')?'audio':'image';
         db.ref('messages').push({ username, type:tipo, fileUrl:url, timestamp:Date.now() });
-        // borrado server 5min
         setTimeout(()=>ref.delete(), 5*60*1000);
       });
-      document.getElementById('file-input').value='';
+      document.getElementById('file-input').value = '';
     }
 
-    function displayMessage(key, m) {
+    function displayMessage(key,m) {
       if (!m || !m.timestamp) return;
-      const c = document.createElement('div');
-      c.className = 'message ' + (m.username===username?'self':'');
+      const c = document.createElement('div'); c.className='message '+(m.username===username?'self':'');
       const ts = new Date(m.timestamp).toLocaleTimeString();
       if (m.type==='text') {
-        c.innerHTML = `<strong>${m.username}</strong>: ${m.text}
-                       <div class="time">${ts}</div>`;
+        c.innerHTML = `<strong>${m.username}</strong>: ${m.text}<div class="time">${ts}</div>`;
       } else if (m.type==='image') {
-        c.innerHTML = `<strong>${m.username}</strong>:<br>
-                       <img src="${m.fileUrl}"><div class="time">${ts}</div>`;
-        c.querySelector('img').onload = ()=>{
-          // solo 1 visualización en este cliente
-          c.remove();
-          // los demás ya lo vieron, pero no borramos de DB para que cada uno lo vea 1 vez
-        };
+        const img = document.createElement('img'); img.src = m.fileUrl;
+        img.addEventListener('click',()=>img.remove()); c.innerHTML = `<strong>${m.username}</strong>:<div class="time">${ts}</div>`;
+        c.appendChild(img);
       } else if (m.type==='audio') {
-        c.innerHTML = `<strong>${m.username}</strong>:<br>
-                       <audio controls src="${m.fileUrl}"></audio>
-                       <div class="time">${ts}</div>`;
-        c.querySelector('audio').onended = ()=>c.remove();
+        const aud= document.createElement('audio'); aud.src=m.fileUrl; aud.controls=true;
+        aud.addEventListener('ended',()=>aud.remove()); c.innerHTML=`<strong>${m.username}</strong>:<div class="time">${ts}</div>`;
+        c.appendChild(aud);
       }
       document.getElementById('main-chat').appendChild(c);
     }
 
-    function scrollBottom(){
-      const m = document.getElementById('main-chat');
-      m.scrollTop = m.scrollHeight;
-    }
-
-    function logEvent(txt){
-      db.ref('logs').push({ text: txt, timestamp: Date.now() });
-    }
-    function cleanLogs(){
-      db.ref('logs').once('value', snap=>{
-        snap.forEach(ch=>{
-          if (Date.now() - ch.val().timestamp > 48*3600*1000)
-            ch.ref.remove();
-        });
-      });
-    }
+    function scrollBottom(){ const m=document.getElementById('main-chat'); m.scrollTop=m.scrollHeight; }
+    function logEvent(txt){ db.ref('logs').push({ text:txt, timestamp:Date.now() }); }
+    function cleanLogs(){ db.ref('logs').once('value',snap=>snap.forEach(ch=>{ if(Date.now()-ch.val().timestamp>48*3600*1000) ch.ref.remove(); })); }
   </script>
 </body>
 </html>
