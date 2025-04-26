@@ -45,7 +45,7 @@
 <body>
   <!-- LOGIN -->
   <div id="login">
-    <h2>🔒 Acceso al Chat</h2>
+    <h2>🔒 Campo Magnético</h2>
     <input id="pwd" type="password" placeholder="Contraseña">
     <button onclick="checkPassword()">Entrar</button>
   </div>
@@ -60,6 +60,7 @@
       <label class="btn-circle">
         📷<input id="file-input" type="file" accept="image/*" onchange="sendFile()">
       </label>
+      <button id="emoji-btn" class="btn-circle">😃</button>
       <button id="record-btn" class="btn-circle">🎤</button>
       <input id="message-input" type="text" placeholder="Escribe tu mensaje…" onkeyup="if(event.key==='Enter') sendMessage();">
       <button class="btn-circle" onclick="sendMessage()">➤</button>
@@ -67,10 +68,11 @@
   </div>
   <!-- Modal imagen -->
   <div id="imgModal" onclick="closeModal()"><img id="modalImg"></div>
-  <!-- FIREBASE -->
+  <!-- Libraries -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@joeattardi/emoji-button@4.6.0/dist/index.min.js"></script>
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyCGIgoiTmjt3CsAGTx0_2sSVVVDUrAJm0c",
@@ -86,6 +88,18 @@
     const storage = firebase.storage();
     let username = localStorage.getItem('chat_username');
     let mediaRecorder, audioChunks = [];
+
+    // Emoji Picker
+    const picker = new EmojiButton.EmojiButton();
+    document.getElementById('emoji-btn').addEventListener('click', () => {
+      picker.togglePicker(document.getElementById('message-input'));
+    });
+    picker.on('emoji', emoji => {
+      const input = document.getElementById('message-input');
+      input.value += emoji;
+      input.focus();
+    });
+
     document.getElementById('record-btn').onclick = toggleRecording;
 
     function toggleRecording() {
@@ -115,11 +129,13 @@
     }
 
     function sendFile() {
-      const f = document.getElementById('file-input').files[0];
+      const fileInput = document.getElementById('file-input');
+      const f = fileInput.files[0];
       if (!f) return;
       const ref = storage.ref(`temp/${Date.now()}_${f.name}`);
       ref.put(f).then(() => ref.getDownloadURL()).then(url => {
         db.ref('messages').push({ username, type: 'image', fileUrl: url, timestamp: Date.now() });
+        fileInput.value = '';
         setTimeout(() => ref.delete(), 5 * 60 * 1000);
       });
     }
@@ -133,22 +149,21 @@
     }
 
     function checkPassword() {
-      if (document.getElementById('pwd').value !== 'aurora78') {
-        return alert('Contraseña incorrecta');
-      }
+      const pwd = document.getElementById('pwd').value;
+      if (pwd !== 'aurora78') { alert('Contraseña incorrecta'); return; }
       document.getElementById('login').style.display = 'none';
       document.getElementById('chat-container').style.display = 'flex';
       if (!username) {
-        username = prompt('¿Cómo te llamas?');
+        username = prompt('¿Cómo te llamas?') || 'Anónimo';
         localStorage.setItem('chat_username', username);
       }
       startChat();
     }
 
     function startChat() {
-      const me = db.ref('users/' + username);
-      me.set(true);
-      me.onDisconnect().remove();
+      const meRef = db.ref('users/' + username);
+      meRef.set(true);
+      meRef.onDisconnect().remove();
       cleanLogs();
       logEvent(username + ' ha entrado');
 
@@ -165,50 +180,51 @@
       db.ref('users').on('value', snap => {
         const ul = document.getElementById('users-list');
         ul.innerHTML = '';
-        Object.keys(snap.val() || {}).forEach(u => {
+        if (snap.val()) Object.keys(snap.val()).forEach(u => {
           const li = document.createElement('li');
           li.textContent = u;
           ul.appendChild(li);
         });
       });
 
-      db.ref('logs').orderByChild('timestamp').startAt(Date.now() - 48 * 3600 * 1000).on('child_added', s => {
-        const e = s.val();
-        const t = new Date(e.timestamp).toLocaleTimeString();
-        const li = document.createElement('li');
-        li.textContent = `[${t}] ${e.text}`;
-        document.getElementById('log-list').appendChild(li);
-      });
+      db.ref('logs').orderByChild('timestamp').startAt(Date.now() - 48 * 3600 * 1000)
+        .on('child_added', s => {
+          const e = s.val();
+          const t = new Date(e.timestamp).toLocaleTimeString();
+          const li = document.createElement('li');
+          li.textContent = `[${t}] ${e.text}`;
+          document.getElementById('log-list').appendChild(li);
+        });
     }
 
     function displayMessage(key, m) {
       if (!m || !m.timestamp) return;
-      const c = document.createElement('div');
-      c.className = 'message ' + (m.username === username ? 'self' : '');
+      const container = document.createElement('div');
+      container.className = 'message ' + (m.username === username ? 'self' : '');
       const ts = new Date(m.timestamp).toLocaleTimeString();
+      container.innerHTML = `<strong>${m.username}</strong><div class="time">${ts}</div>`;
 
       if (m.type === 'text') {
-        c.innerHTML = `<strong>${m.username}</strong>: ${m.text}<div class="time">${ts}</div>`;
+        container.innerHTML += `<p>${m.text}</p>`;
       } else if (m.type === 'image') {
         const img = document.createElement('img');
         img.src = m.fileUrl;
+        img.alt = 'Imagen enviada';
         img.onclick = () => openModal(m.fileUrl, img);
-        c.innerHTML = `<strong>${m.username}</strong><div class="time">${ts}</div>`;
-        c.appendChild(img);
+        container.appendChild(img);
       } else if (m.type === 'audio') {
         const aud = document.createElement('audio');
         aud.src = m.fileUrl;
         aud.controls = true;
-        c.innerHTML = `<strong>${m.username}</strong><div class="time">${ts}</div>`;
-        c.appendChild(aud);
+        container.appendChild(aud);
       }
 
-      document.getElementById('main-chat').appendChild(c);
+      document.getElementById('main-chat').appendChild(container);
     }
 
     function scrollBottom() {
-      const m = document.getElementById('main-chat');
-      m.scrollTop = m.scrollHeight;
+      const chat = document.getElementById('main-chat');
+      chat.scrollTop = chat.scrollHeight;
     }
 
     function logEvent(text) {
