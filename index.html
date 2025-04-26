@@ -3,309 +3,202 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Chat Privado</title>
+  <title>Chat Aurora</title>
   <style>
-    :root {
-      --primary-color: #4a90e2;
-      --secondary-color: #e6f0fa;
-      --background-color: #f4faff;
-      --text-color: #333;
-      --white: #fff;
-    }
-
     body {
       margin: 0;
-      padding: 0;
-      font-family: 'Helvetica Neue', sans-serif;
-      background-color: var(--background-color);
-      color: var(--text-color);
+      font-family: Arial, sans-serif;
+      background: #e0f7fa;
       display: flex;
       flex-direction: column;
       height: 100vh;
+      overflow: hidden;
     }
-
-    #login {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      padding: 20px;
-    }
-
-    #login input, #login button {
-      margin: 10px 0;
-      padding: 12px;
-      width: 100%;
-      max-width: 300px;
-      border: 1px solid var(--primary-color);
-      border-radius: 8px;
-    }
-
-    #login button {
-      background-color: var(--primary-color);
-      color: var(--white);
-      font-weight: bold;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-
-    #login button:hover {
-      background-color: #357ABD;
-    }
-
-    #chat-container {
-      display: none;
-      flex: 1;
-      flex-direction: column;
-      height: 100%;
-    }
-
-    #top-info {
-      display: flex;
-      flex-direction: row;
-      justify-content: space-around;
-      background-color: var(--secondary-color);
-      padding: 8px;
-    }
-
-    #users, #log {
-      background-color: var(--white);
-      border-radius: 8px;
-      padding: 5px;
-      width: 48%;
+    header {
+      background: #0288d1;
+      color: white;
+      padding: 10px;
       text-align: center;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-      font-size: 0.85em;
+      font-size: 20px;
     }
-
-    #main-chat {
+    #chat-container {
       flex: 1;
       display: flex;
       flex-direction: column;
-      margin: 8px;
-      background-color: var(--white);
-      border-radius: 10px;
-      padding: 10px;
-      overflow-y: auto;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
-
-    #input-container {
-      display: flex;
-      padding: 10px;
-      background: var(--secondary-color);
-      align-items: center;
+    #logs, #users {
+      background: #b3e5fc;
+      padding: 5px;
+      font-size: 14px;
+      overflow-x: auto;
+      white-space: nowrap;
     }
-
-    #message-input {
+    #messages {
       flex: 1;
+      overflow-y: auto;
       padding: 10px;
-      border-radius: 8px;
-      border: 1px solid var(--primary-color);
-      margin-right: 8px;
+      background: #ffffff;
     }
-
-    #send-button, #upload-button {
-      background-color: var(--primary-color);
-      color: var(--white);
-      border: none;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
+    #input-area {
       display: flex;
       align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      font-size: 18px;
-      margin-left: 5px;
+      padding: 10px;
+      background: #0288d1;
     }
-
-    #upload-button input {
+    #input-area input[type="text"] {
+      flex: 1;
+      padding: 8px;
+      border: none;
+      border-radius: 4px;
+    }
+    #input-area button, #file-button {
+      background: #ffffff;
+      border: none;
+      margin-left: 5px;
+      padding: 8px;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+    #file-input {
       display: none;
     }
-
-    .message {
-      margin: 5px 0;
-      padding: 8px;
-      background-color: var(--secondary-color);
-      border-radius: 8px;
-      word-break: break-word;
-    }
-
     img, audio {
       max-width: 100%;
       margin-top: 5px;
-      border-radius: 8px;
-    }
-
-    /* Responsive para móviles */
-    @media (max-width: 768px) {
-      #top-info {
-        flex-direction: column;
-        align-items: center;
-      }
-      #users, #log {
-        width: 90%;
-        margin-bottom: 10px;
-      }
-      #input-container {
-        flex-wrap: wrap;
-      }
-      #message-input {
-        width: 100%;
-        margin-bottom: 8px;
-      }
-      #send-button, #upload-button {
-        width: 100%;
-        height: 40px;
-        border-radius: 8px;
-      }
     }
   </style>
 </head>
-
 <body>
 
-<div id="login">
-  <h2>🔒 Acceso al Chat</h2>
-  <input type="password" id="password" placeholder="Contraseña">
-  <button onclick="checkPassword()">Entrar</button>
-</div>
+<header>Chat Aurora</header>
 
 <div id="chat-container">
-  <div id="top-info">
-    <div id="users">
-      <h4>Integrantes</h4>
-      <ul id="user-list"></ul>
-    </div>
-    <div id="log">
-      <h4>Entradas</h4>
-      <ul id="entry-log"></ul>
-    </div>
-  </div>
+  <div id="users">Conectados: </div>
+  <div id="logs">Entradas: </div>
+  <div id="messages"></div>
 
-  <div id="main-chat" id="messages"></div>
-
-  <div id="input-container" style="display:none;">
-    <input type="text" id="message-input" placeholder="Escribe tu mensaje...">
-    <button id="send-button" onclick="sendMessage()">➤</button>
-
-    <label id="upload-button">
-      📎
-      <input type="file" id="file-input" accept="image/*,audio/*" onchange="sendFile()">
-    </label>
+  <div id="input-area">
+    <input id="message-input" type="text" placeholder="Escribe tu mensaje...">
+    <label id="file-button" for="file-input">📎</label>
+    <input id="file-input" type="file" accept="image/*,audio/*">
+    <button id="send-button">➤</button>
   </div>
 </div>
 
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+
 <script>
-  const correctPassword = "aurora78";
+  // Tu configuración de Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyCGIgoiTmjt3CsAGTx0_2sSVVVDUrAJm0c",
+    authDomain: "chataurora-cb895.firebaseapp.com",
+    databaseURL: "https://chataurora-cb895-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "chataurora-cb895",
+    storageBucket: "chataurora-cb895.appspot.com",
+    messagingSenderId: "908639294107",
+    appId: "1:908639294107:web:2497ba35a0e3d84c882c3e"
+  };
 
-  function checkPassword() {
-    const pass = document.getElementById('password').value;
-    if (pass === correctPassword) {
-      login();
-    } else {
-      alert('Contraseña incorrecta.');
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+  const storage = firebase.storage();
+
+  let username = localStorage.getItem('username');
+  
+  async function askLogin() {
+    let pass = prompt("Introduce la contraseña:");
+    if (pass !== "aurora78") {
+      alert("Contraseña incorrecta");
+      location.reload();
+      return;
     }
-  }
-
-  function login() {
-    document.getElementById('login').style.display = 'none';
-    document.getElementById('chat-container').style.display = 'flex';
-    document.getElementById('input-container').style.display = 'flex';
-    let username = localStorage.getItem('chat_username');
     if (!username) {
-      username = prompt("¿Cómo te llamas?");
-      localStorage.setItem('chat_username', username);
+      username = prompt("¿Cuál es tu nombre?");
+      localStorage.setItem('username', username);
     }
-    addUser(username);
-    addEntry(username);
-    loadMessages();
-    loadUsers();
+    db.ref('logs').push(username + " ha entrado");
+    db.ref('users/' + username).set(true);
   }
+  
+  askLogin();
 
-  function addUser(name) {
-    let users = JSON.parse(localStorage.getItem('chat_users') || "[]");
-    if (!users.includes(name)) {
-      users.push(name);
-      localStorage.setItem('chat_users', JSON.stringify(users));
+  const messagesDiv = document.getElementById('messages');
+  const usersDiv = document.getElementById('users');
+  const logsDiv = document.getElementById('logs');
+  const messageInput = document.getElementById('message-input');
+  const fileInput = document.getElementById('file-input');
+  
+  // Mostrar mensajes
+  db.ref('messages').on('child_added', snapshot => {
+    const msg = snapshot.val();
+    const div = document.createElement('div');
+    div.innerHTML = `<b>${msg.name}</b> [${msg.time}]: ${msg.text || ''}`;
+    if (msg.type === 'image') {
+      const img = document.createElement('img');
+      img.src = msg.url;
+      img.onload = () => db.ref('messages/' + snapshot.key).remove();
+      div.appendChild(img);
     }
-    loadUsers();
-  }
-
-  function addEntry(name) {
-    const log = document.getElementById('entry-log');
-    const li = document.createElement('li');
-    li.textContent = `${name} ha entrado (${new Date().toLocaleTimeString()})`;
-    log.appendChild(li);
-  }
-
-  function loadUsers() {
-    const users = JSON.parse(localStorage.getItem('chat_users') || "[]");
-    const userList = document.getElementById('user-list');
-    userList.innerHTML = "";
-    users.forEach(u => {
-      const li = document.createElement('li');
-      li.textContent = u;
-      userList.appendChild(li);
-    });
-  }
-
-  function sendMessage() {
-    const input = document.getElementById('message-input');
-    if (input.value.trim() === "") return;
-    const message = {
-      user: localStorage.getItem('chat_username'),
-      text: input.value,
-      time: new Date().toLocaleTimeString()
-    };
-    saveMessage(message);
-    input.value = "";
-    loadMessages();
-  }
-
-  function saveMessage(msg) {
-    let messages = JSON.parse(localStorage.getItem('chat_messages') || "[]");
-    messages.push(msg);
-    localStorage.setItem('chat_messages', JSON.stringify(messages));
-  }
-
-  function loadMessages() {
-    const messagesDiv = document.getElementById('main-chat');
-    messagesDiv.innerHTML = "";
-    const messages = JSON.parse(localStorage.getItem('chat_messages') || "[]");
-    messages.forEach(m => {
-      const div = document.createElement('div');
-      div.className = 'message';
-      div.innerHTML = `<b>${m.user}</b> [${m.time}]: ${m.text || ''} ${m.file ? m.file : ''}`;
-      messagesDiv.appendChild(div);
-    });
+    if (msg.type === 'audio') {
+      const audio = document.createElement('audio');
+      audio.src = msg.url;
+      audio.controls = true;
+      audio.onended = () => db.ref('messages/' + snapshot.key).remove();
+      div.appendChild(audio);
+    }
+    messagesDiv.appendChild(div);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
-  }
+  });
 
-  function sendFile() {
-    const fileInput = document.getElementById('file-input');
-    const file = fileInput.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      let content = "";
-      if (file.type.startsWith('image/')) {
-        content = `<img src="${e.target.result}" onclick="this.remove()">`;
-      } else if (file.type.startsWith('audio/')) {
-        content = `<audio controls src="${e.target.result}" onended="this.remove()"></audio>`;
-      }
-      const message = {
-        user: localStorage.getItem('chat_username'),
-        file: content,
-        time: new Date().toLocaleTimeString()
-      };
-      saveMessage(message);
-      loadMessages();
+  // Mostrar usuarios
+  db.ref('users').on('value', snapshot => {
+    const users = Object.keys(snapshot.val() || {});
+    usersDiv.innerText = "Conectados: " + users.join(', ');
+  });
+
+  // Mostrar logs
+  db.ref('logs').on('child_added', snapshot => {
+    const log = snapshot.val();
+    const span = document.createElement('span');
+    span.textContent = log + " ";
+    logsDiv.appendChild(span);
+  });
+
+  // Enviar mensajes
+  document.getElementById('send-button').onclick = () => {
+    const text = messageInput.value.trim();
+    if (text) {
+      const now = new Date();
+      db.ref('messages').push({
+        name: username,
+        text: text,
+        time: now.toLocaleTimeString(),
+        type: 'text'
+      });
+      messageInput.value = '';
     }
-    reader.readAsDataURL(file);
-  }
+  };
+
+  fileInput.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const now = new Date();
+    const ref = storage.ref('temp/' + Date.now() + '_' + file.name);
+    await ref.put(file);
+    const url = await ref.getDownloadURL();
+    const type = file.type.startsWith('image') ? 'image' : 'audio';
+    db.ref('messages').push({
+      name: username,
+      url: url,
+      time: now.toLocaleTimeString(),
+      type: type
+    });
+    // No almacenamos el archivo localmente y se borra del chat tras una visualización
+  });
+
 </script>
 
 </body>
