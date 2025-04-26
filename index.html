@@ -15,84 +15,40 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: sans-serif; background: var(--bg); display: flex; flex-direction: column; height: 100vh; }
     /* LOGIN */
-    #login {
-      flex: 1; display: flex; flex-direction: column;
-      justify-content: center; align-items: center; padding: 20px;
-    }
-    #login input, #login button {
-      width: 100%; max-width: 300px; margin: 8px 0; padding: 12px;
-      border: 1px solid var(--primary); border-radius: 6px;
-    }
-    #login button {
-      background: var(--primary); color: var(--white); cursor: pointer;
-    }
+    #login { flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; padding:20px; }
+    #login input, #login button { width:100%; max-width:300px; margin:8px 0; padding:12px; border:1px solid var(--primary); border-radius:6px; }
+    #login button { background:var(--primary); color:var(--white); cursor:pointer; }
     /* CHAT */
-    #chat-container { display: none; flex: 1; flex-direction: column; }
-    #top-info {
-      display: flex; justify-content: space-between;
-      padding: 6px 12px; background: var(--secondary); font-size: 0.8em;
-    }
-    #users, #log {
-      background: var(--white); padding: 4px 8px;
-      border-radius: 6px; overflow-x: auto; white-space: nowrap;
-      max-width: 48%;
-    }
-    /* Limitar altura y habilitar scroll vertical */
-    #users { max-height: 50px; overflow-y: auto; }
-    #log { max-height: 80px; overflow-y: auto; }
-
-    #users strong, #log strong { margin-right: 4px; }
-    #users-list, #log-list { list-style: none; padding-left: 0; margin: 4px 0 0 0; }
-    #users-list li, #log-list li { margin-bottom: 4px; }
-    #main-chat {
-      flex: 1; padding: 10px; background: var(--white);
-      overflow-y: auto; display: flex; flex-direction: column;
-    }
-    .message {
-      position: relative;
-      margin-bottom: 20px; padding: 12px 16px;
-      background: var(--secondary); border-radius: 8px;
-      word-break: break-word;
-    }
-    .self { background: #c5e3fc; align-self: flex-end; }
-    .time {
-      position: absolute; bottom: 4px; right: 8px;
-      font-size: 0.7em; color: #555;
-    }
-    #input-container {
-      display: flex; align-items: center;
-      padding: 8px 12px; background: var(--secondary);
-    }
-    #message-input {
-      flex: 1; padding: 10px; border: 1px solid var(--primary);
-      border-radius: 20px; outline: none;
-    }
-    .btn-circle {
-      width: 36px; height: 36px; margin-left: 6px;
-      border: none; border-radius: 50%;
-      background: var(--primary); color: var(--white);
-      font-size: 18px; display: flex;
-      align-items: center; justify-content: center;
-      cursor: pointer;
-    }
-    .btn-circle input { display: none; }
-    img, audio { max-width: 100%; margin-top: 6px; border-radius: 6px; }
-
-    @media(max-width:600px) {
-      #top-info { flex-direction: column; font-size: 0.75em; }
-      #users, #log { max-width:100%; margin-bottom:4px; }
-    }
+    #chat-container { display:none; flex:1; flex-direction:column; }
+    #top-info { display:flex; justify-content:space-between; padding:6px 12px; background:var(--secondary); font-size:0.8em; }
+    #users, #log { background:var(--white); padding:4px 8px; border-radius:6px; overflow-y:auto; }
+    #users { max-width:48%; max-height:50px; }
+    #log { max-width:48%; max-height:80px; }
+    #users strong, #log strong { margin-right:4px; }
+    #users-list, #log-list { list-style:none; padding-left:0; margin-top:4px; }
+    #users-list li, #log-list li { margin-bottom:2px; }
+    #main-chat { flex:1; padding:10px; background:var(--white); overflow-y:auto; display:flex; flex-direction:column; }
+    .message { position:relative; margin-bottom:20px; padding:12px 16px; background:var(--secondary); border-radius:8px; word-break:break-word; }
+    .self { background:#c5e3fc; align-self:flex-end; }
+    .time { position:absolute; bottom:4px; right:8px; font-size:0.7em; color:#555; }
+    #input-container { display:flex; align-items:center; padding:8px 12px; background:var(--secondary); }
+    #message-input { flex:1; padding:10px; border:1px solid var(--primary); border-radius:20px; outline:none; }
+    .btn-circle { width:36px; height:36px; margin-left:6px; border:none; border-radius:50%; background:var(--primary); color:var(--white); font-size:18px; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+    .btn-circle input { display:none; }
+    img, audio { max-width:100%; margin-top:6px; border-radius:6px; }
+    @media(max-width:600px) { #top-info { flex-direction:column; font-size:0.75em; } #users, #log { max-width:100%; margin-bottom:4px; } }
+    /* Modal imagen */
+    #imgModal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); display:none; align-items:center; justify-content:center; }
+    #imgModal img { max-width:90%; max-height:90%; border-radius:8px; }
   </style>
 </head>
 <body>
-
   <!-- LOGIN -->
   <div id="login">
     <h2>🔒 Acceso al Chat</h2>
     <input id="pwd" type="password" placeholder="Contraseña">
     <button onclick="checkPassword()">Entrar</button>
   </div>
-
   <!-- CHAT -->
   <div id="chat-container">
     <div id="top-info">
@@ -102,116 +58,49 @@
     <div id="main-chat"></div>
     <div id="input-container">
       <label class="btn-circle">
-        📷<input id="file-input" type="file" accept="image/*" capture="environment" onchange="sendFile()">
+        📎<input id="file-input" type="file" accept="image/*,audio/*" onchange="sendFile()">
       </label>
       <input id="message-input" type="text" placeholder="Escribe tu mensaje…">
       <button class="btn-circle" onclick="sendMessage()">➤</button>
     </div>
   </div>
-
+  <!-- Modal imagen -->
+  <div id="imgModal" onclick="closeModal()"><img id="modalImg"></div>
   <!-- FIREBASE -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
   <script>
-    // CONFIGURA TU FIREBASE
-    const firebaseConfig = {
-      apiKey: "AIzaSyCGIgoiTmjt3CsAGTx0_2sSVVVDUrAJm0c",
-      authDomain: "chataurora-cb895.firebaseapp.com",
-      databaseURL: "https://chataurora-cb895-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId: "chataurora-cb895",
-      storageBucket: "chataurora-cb895.appspot.com",
-      messagingSenderId: "908639294107",
-      appId: "1:908639294107:web:2497ba35a0e3d84c882c3e"
-    };
+    const firebaseConfig = { apiKey:"AIzaSyCGIgoiTmjt3CsAGTx0_2sSVVVDUrAJm0c", authDomain:"chataurora-cb895.firebaseapp.com", databaseURL:"https://chataurora-cb895-default-rtdb.europe-west1.firebasedatabase.app", projectId:"chataurora-cb895", storageBucket:"chataurora-cb895.appspot.com", messagingSenderId:"908639294107", appId:"1:908639294107:web:2497ba35a0e3d84c882c3e" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database(), storage = firebase.storage();
-
     let username = localStorage.getItem('chat_username');
-
     function checkPassword() {
       if (document.getElementById('pwd').value !== 'aurora78') return alert('Contraseña incorrecta');
-      document.getElementById('login').style.display = 'none';
-      document.getElementById('chat-container').style.display = 'flex';
-      if (!username) {
-        username = prompt('¿Cómo te llamas?');
-        localStorage.setItem('chat_username', username);
-      }
+      document.getElementById('login').style.display='none'; document.getElementById('chat-container').style.display='flex';
+      if (!username) { username = prompt('¿Cómo te llamas?'); localStorage.setItem('chat_username', username); }
       startChat();
     }
-
     function startChat() {
-      // presencia
-      const me = db.ref('users/' + username);
-      me.set(true); me.onDisconnect().remove();
-
-      cleanLogs();  logEvent(`${username} ha entrado`);
-
-      // historial mensajes
-      db.ref('messages').orderByChild('timestamp').once('value', snap => {
-        snap.forEach(ch => displayMessage(ch.key, ch.val())); scrollBottom();
-      });
-
-      // nuevos mensajes
-      db.ref('messages').orderByChild('timestamp').startAt(Date.now())
-        .on('child_added', ch => { displayMessage(ch.key, ch.val()); scrollBottom(); });
-
-      // usuarios activos
-      db.ref('users').on('value', snap => {
-        const ul = document.getElementById('users-list'); ul.innerHTML = '';
-        Object.keys(snap.val()||{}).forEach(u => {
-          const li = document.createElement('li'); li.textContent = u; ul.appendChild(li);
-        });
-      });
-
-      // log 48h
-      db.ref('logs').orderByChild('timestamp').startAt(Date.now()-48*3600*1000)
-        .on('child_added', s => {
-          const e = s.val(), t = new Date(e.timestamp).toLocaleTimeString();
-          const li = document.createElement('li'); li.textContent = `[${t}] ${e.text}`;
-          document.getElementById('log-list').appendChild(li);
-        });
+      const me = db.ref('users/'+username); me.set(true); me.onDisconnect().remove();
+      cleanLogs(); logEvent(username+' ha entrado');
+      db.ref('messages').orderByChild('timestamp').once('value',snap=>{ snap.forEach(ch=>displayMessage(ch.key,ch.val())); scrollBottom(); });
+      db.ref('messages').orderByChild('timestamp').startAt(Date.now()).on('child_added',ch=>{ displayMessage(ch.key,ch.val()); scrollBottom(); });
+      db.ref('users').on('value',snap=>{ const ul=document.getElementById('users-list'); ul.innerHTML=''; Object.keys(snap.val()||{}).forEach(u=>{ let li=document.createElement('li'); li.textContent=u; ul.appendChild(li); }); });
+      db.ref('logs').orderByChild('timestamp').startAt(Date.now()-48*3600*1e3).on('child_added',s=>{ let e=s.val(), t=new Date(e.timestamp).toLocaleTimeString(); let li=document.createElement('li'); li.textContent=`[${t}] ${e.text}`; document.getElementById('log-list').appendChild(li); });
     }
-
-    function sendMessage() {
-      const t = document.getElementById('message-input').value.trim();
-      if (!t) return;
-      db.ref('messages').push({ username, type:'text', text:t, timestamp:Date.now() });
-      document.getElementById('message-input').value = '';
-    }
-
-    function sendFile() {
-      const f = document.getElementById('file-input').files[0]; if (!f) return;
-      const path = `temp/${Date.now()}_${f.name}`, ref = storage.ref(path);
-      ref.put(f).then(()=> ref.getDownloadURL()).then(url => {
-        const tipo = f.type.startsWith('audio')?'audio':'image';
-        db.ref('messages').push({ username, type:tipo, fileUrl:url, timestamp:Date.now() });
-        setTimeout(()=>ref.delete(), 5*60*1000);
-      });
-      document.getElementById('file-input').value = '';
-    }
-
-    function displayMessage(key,m) {
-      if (!m || !m.timestamp) return;
-      const c = document.createElement('div'); c.className='message '+(m.username===username?'self':'');
-      const ts = new Date(m.timestamp).toLocaleTimeString();
-      if (m.type==='text') {
-        c.innerHTML = `<strong>${m.username}</strong>: ${m.text}<div class="time">${ts}</div>`;
-      } else if (m.type==='image') {
-        const img = document.createElement('img'); img.src = m.fileUrl;
-        img.addEventListener('click',()=>img.remove()); c.innerHTML = `<strong>${m.username}</strong>:<div class="time">${ts}</div>`;
-        c.appendChild(img);
-      } else if (m.type==='audio') {
-        const aud= document.createElement('audio'); aud.src=m.fileUrl; aud.controls=true;
-        aud.addEventListener('ended',()=>aud.remove()); c.innerHTML=`<strong>${m.username}</strong>:<div class="time">${ts}</div>`;
-        c.appendChild(aud);
-      }
+    function sendMessage(){ let t=document.getElementById('message-input').value.trim(); if(!t) return; db.ref('messages').push({username,type:'text',text:t,timestamp:Date.now()}); document.getElementById('message-input').value=''; }
+    async function sendFile(){ let f=document.getElementById('file-input').files[0]; if(!f) return; let ref=storage.ref('temp/'+Date.now()+'_'+f.name); let snap=await ref.put(f); let url=await snap.ref.getDownloadURL(); let tipo=f.type.startsWith('audio')?'audio':'image'; db.ref('messages').push({username,type:tipo,fileUrl:url,timestamp:Date.now()}); setTimeout(()=>ref.delete(),5*60*1e3); document.getElementById('file-input').value=''; }
+    function displayMessage(key,m){ if(!m||!m.timestamp) return; let c=document.createElement('div'); c.className='message '+(m.username===username?'self':''); let ts=new Date(m.timestamp).toLocaleTimeString(); if(m.type==='text'){ c.innerHTML=`<strong>${m.username}</strong>: ${m.text}<div class="time">${ts}</div>`; }
+      else if(m.type==='image'){ let btn=document.createElement('button'); btn.textContent='Ver imagen'; btn.className='btn-circle'; btn.onclick=()=>openModal(m.fileUrl,btn); c.innerHTML=`<strong>${m.username}</strong><div class="time">${ts}</div>`; c.appendChild(btn); }
+      else if(m.type==='audio'){ let aud=document.createElement('audio'); aud.src=m.fileUrl; aud.controls=true; aud.onended=()=>aud.remove(); c.innerHTML=`<strong>${m.username}</strong><div class="time">${ts}</div>`; c.appendChild(aud); }
       document.getElementById('main-chat').appendChild(c);
     }
-
-    function scrollBottom(){ const m=document.getElementById('main-chat'); m.scrollTop=m.scrollHeight; }
-    function logEvent(txt){ db.ref('logs').push({ text:txt, timestamp:Date.now() }); }
-    function cleanLogs(){ db.ref('logs').once('value',snap=>snap.forEach(ch=>{ if(Date.now()-ch.val().timestamp>48*3600*1000) ch.ref.remove(); })); }
+    function scrollBottom(){ let m=document.getElementById('main-chat'); m.scrollTop=m.scrollHeight; }
+    function logEvent(t){ db.ref('logs').push({text:t,timestamp:Date.now()}); }
+    function cleanLogs(){ db.ref('logs').once('value',snap=>snap.forEach(ch=>{ if(Date.now()-ch.val().timestamp>48*3600*1e3) ch.ref.remove(); })); }
+    function openModal(url,btn){ let modal=document.getElementById('imgModal'); document.getElementById('modalImg').src=url; modal.style.display='flex'; modal.onclick=()=>{ closeModal(); btn.remove(); }; }
+    function closeModal(){ document.getElementById('imgModal').style.display='none'; }
   </script>
 </body>
 </html>
