@@ -2,47 +2,171 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Chat Privado</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; }
-    #login { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
-    #chat-container { display: none; flex: 1; flex-direction: row; height: 100%; }
-    #messages { flex: 3; border-right: 1px solid #ccc; padding: 10px; overflow-y: scroll; }
-    #users { flex: 1; border-right: 1px solid #ccc; padding: 10px; overflow-y: auto; }
-    #log { flex: 1; padding: 10px; overflow-y: auto; }
-    #input-container { display: flex; }
-    input[type="text"] { flex: 1; padding: 10px; }
-    button { padding: 10px; }
-    .message { margin: 5px 0; }
-    img, audio { max-width: 100%; margin-top: 5px; }
+    :root {
+      --primary-color: #4a90e2;
+      --secondary-color: #e6f0fa;
+      --background-color: #f4faff;
+      --text-color: #333;
+      --white: #fff;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Helvetica Neue', sans-serif;
+      background-color: var(--background-color);
+      color: var(--text-color);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    #login {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      padding: 20px;
+    }
+
+    #login input, #login button {
+      margin: 10px 0;
+      padding: 12px;
+      width: 100%;
+      max-width: 300px;
+      border: 1px solid var(--primary-color);
+      border-radius: 8px;
+    }
+
+    #login button {
+      background-color: var(--primary-color);
+      color: var(--white);
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    #login button:hover {
+      background-color: #357ABD;
+    }
+
+    #chat-container {
+      display: none;
+      flex: 1;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    #top-panels {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      flex-direction: row;
+    }
+
+    #messages, #users, #log {
+      background-color: var(--white);
+      border-radius: 10px;
+      margin: 8px;
+      padding: 10px;
+      overflow-y: auto;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    #messages {
+      flex: 3;
+    }
+
+    #users, #log {
+      flex: 1;
+      font-size: 0.9em;
+    }
+
+    #input-container {
+      display: flex;
+      padding: 10px;
+      background: var(--secondary-color);
+      align-items: center;
+    }
+
+    #message-input {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid var(--primary-color);
+      margin-right: 8px;
+    }
+
+    button, input[type="file"] {
+      background-color: var(--primary-color);
+      color: var(--white);
+      border: none;
+      border-radius: 8px;
+      padding: 10px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background-color: #357ABD;
+    }
+
+    .message {
+      margin: 5px 0;
+      padding: 8px;
+      background-color: var(--secondary-color);
+      border-radius: 8px;
+    }
+
+    img, audio {
+      max-width: 100%;
+      margin-top: 5px;
+      border-radius: 8px;
+    }
+
+    /* Responsivo para móviles */
+    @media (max-width: 768px) {
+      #top-panels {
+        flex-direction: column;
+      }
+      #users, #log {
+        flex: none;
+        height: 100px;
+      }
+    }
   </style>
 </head>
+
 <body>
 
 <div id="login">
-  <h2>Acceso al Chat</h2>
+  <h2>🔒 Acceso al Chat</h2>
   <input type="password" id="password" placeholder="Contraseña">
   <button onclick="checkPassword()">Entrar</button>
 </div>
 
 <div id="chat-container">
-  <div id="users">
-    <h3>Integrantes</h3>
-    <ul id="user-list"></ul>
+  <div id="top-panels">
+    <div id="messages"></div>
+    <div id="users">
+      <h3>Integrantes</h3>
+      <ul id="user-list"></ul>
+    </div>
+    <div id="log">
+      <h3>Entradas</h3>
+      <ul id="entry-log"></ul>
+    </div>
   </div>
 
-  <div id="messages"></div>
-
-  <div id="log">
-    <h3>Entradas</h3>
-    <ul id="entry-log"></ul>
+  <div id="input-container" style="display:none;">
+    <input type="text" id="message-input" placeholder="Escribe tu mensaje...">
+    <button onclick="sendMessage()">Enviar</button>
+    <input type="file" id="file-input" accept="image/*,audio/*" onchange="sendFile()">
   </div>
-</div>
-
-<div id="input-container" style="display:none;">
-  <input type="text" id="message-input" placeholder="Escribe un mensaje...">
-  <button onclick="sendMessage()">Enviar</button>
-  <input type="file" id="file-input" accept="image/*,audio/*" onchange="sendFile()">
 </div>
 
 <script>
