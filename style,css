@@ -1,109 +1,53 @@
-body, html {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: #e0f7fa;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+/* Reset y fuente */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body, html { height: 100%; font-family: 'Segoe UI', sans-serif; background: #e0f7fa; }
+.screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
+
+/* Login */
+#loginScreen input {
+  padding: 10px; width: 80%; max-width: 300px; margin-bottom: 12px; border-radius: 8px; border: 1px solid #0288d1;
+}
+#loginScreen button {
+  padding: 10px 20px; background: #0288d1; color: #fff; border: none; border-radius: 8px; cursor: pointer;
 }
 
-.centered {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.hidden {
-  display: none;
-}
-
-#chatScreen {
-  width: 100%;
-  max-width: 500px;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
+/* Chat */
+.hidden { display: none; }
+#chatScreen { width: 100%; max-width: 500px; height: 100vh; display: flex; flex-direction: column; }
+/* Header usuarios + log */
 header {
-  background: #0288d1;
-  color: white;
-  padding: 10px;
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.8rem;
+  display: flex; justify-content: space-between; padding: 8px; background: #0288d1; color: #fff; font-size: 0.8rem;
 }
-
-#usersList, #logList {
-  max-width: 45%;
-  overflow-y: auto;
-  font-size: 0.75rem;
+#usersList, #logList { max-width: 48%; overflow-x: auto; white-space: nowrap; }
+/* Mensajes */
+main#messages {
+  flex: 1; padding: 10px; background: #b2ebf2; overflow-y: auto; display: flex; flex-direction: column;
 }
-
-main {
-  flex-grow: 1;
-  background: #b2ebf2;
-  overflow-y: auto;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-}
-
 .message {
-  background: white;
-  padding: 8px 12px;
-  margin-bottom: 8px;
-  border-radius: 10px;
-  max-width: 80%;
+  padding: 8px 12px; margin-bottom: 8px; border-radius: 15px; position: relative; max-width: 80%;
+  word-wrap: break-word; font-size: 0.9rem;
+}
+.message.self { background: #81d4fa; align-self: flex-end; }
+.message.other { background: #ffffff; align-self: flex-start; }
+/* Time badge */
+.message .time {
+  position: absolute; bottom: -14px; right: 10px; font-size: 0.7rem; color: #555;
 }
 
-.message.self {
-  background: #81d4fa;
-  align-self: flex-end;
-}
-
+/* Footer input */
 footer {
-  background: #0288d1;
-  padding: 10px;
-  display: flex;
-  align-items: center;
+  display: flex; align-items: center; padding: 10px; background: #0288d1;
 }
-
 #messageInput {
-  flex-grow: 1;
-  border: none;
-  border-radius: 20px;
-  padding: 8px 15px;
-  margin: 0 8px;
-  outline: none;
+  flex: 1; padding: 8px 12px; border-radius: 20px; border: none; outline: none; font-size: 1rem;
 }
-
 #sendButton, .file-label {
-  background: #fff;
-  border: none;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  font-size: 20px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
+  background: #fff; width: 40px; height: 40px; border-radius: 50%; display: flex;
+  align-items: center; justify-content: center; margin-left: 8px; font-size: 1.2rem; cursor: pointer;
 }
 
-.file-label {
-  margin-right: 8px;
-  font-size: 22px;
-}
-
-/* Responsive ajustes */
+/* Responsive */
 @media (max-width: 600px) {
-  header {
-    font-size: 0.7rem;
-  }
-  #usersList, #logList {
-    max-width: 45%;
-  }
+  header { font-size: 0.7rem; }
+  .message { font-size: 0.85rem; }
 }
