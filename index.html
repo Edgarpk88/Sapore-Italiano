@@ -7,30 +7,27 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="loginScreen" class="centered">
-    <h1>Chat Aurora</h1>
+  <div id="loginScreen" class="screen">
+    <h1>🔒 Chat Aurora</h1>
     <input type="password" id="passwordInput" placeholder="Contraseña">
-    <button onclick="checkPassword()">Entrar</button>
+    <button id="loginBtn">Entrar</button>
   </div>
 
-  <div id="chatScreen" class="hidden">
+  <div id="chatScreen" class="screen hidden">
     <header>
-      <div id="usersList"></div>
-      <div id="logList"></div>
+      <div id="usersList">👥 </div>
+      <div id="logList">📋 </div>
     </header>
-
     <main id="messages"></main>
-
     <footer>
-      <label for="fileInput" class="file-label">
-        📎
-      </label>
-      <input type="file" id="fileInput" accept="image/*,audio/*" onchange="sendFile()" hidden>
+      <label for="fileInput" class="file-label">📎</label>
+      <input type="file" id="fileInput" accept="image/*,audio/*" hidden>
       <input type="text" id="messageInput" placeholder="Escribe tu mensaje...">
-      <button id="sendButton" onclick="sendMessage()">➤</button>
+      <button id="sendButton">➤</button>
     </footer>
   </div>
 
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
