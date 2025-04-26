@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Chat Privado</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; }
+    #login { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
+    #chat-container { display: none; flex: 1; flex-direction: row; height: 100%; }
+    #messages { flex: 3; border-right: 1px solid #ccc; padding: 10px; overflow-y: scroll; }
+    #users { flex: 1; border-right: 1px solid #ccc; padding: 10px; overflow-y: auto; }
+    #log { flex: 1; padding: 10px; overflow-y: auto; }
+    #input-container { display: flex; }
+    input[type="text"] { flex: 1; padding: 10px; }
+    button { padding: 10px; }
+    .message { margin: 5px 0; }
+    img, audio { max-width: 100%; margin-top: 5px; }
+  </style>
+</head>
+<body>
+
+<div id="login">
+  <h2>Acceso al Chat</h2>
+  <input type="password" id="password" placeholder="Contraseña">
+  <button onclick="checkPassword()">Entrar</button>
+</div>
+
+<div id="chat-container">
+  <div id="users">
+    <h3>Integrantes</h3>
+    <ul id="user-list"></ul>
+  </div>
+
+  <div id="messages"></div>
+
+  <div id="log">
+    <h3>Entradas</h3>
+    <ul id="entry-log"></ul>
+  </div>
+</div>
+
+<div id="input-container" style="display:none;">
+  <input type="text" id="message-input" placeholder="Escribe un mensaje...">
+  <button onclick="sendMessage()">Enviar</button>
+  <input type="file" id="file-input" accept="image/*,audio/*" onchange="sendFile()">
+</div>
+
+<script>
+  const correctPassword = "aurora78";
+
+  function checkPassword() {
+    const pass = document.getElementById('password').value;
+    if (pass === correctPassword) {
+      login();
+    } else {
+      alert('Contraseña incorrecta.');
+    }
+  }
+
+  function login() {
+    document.getElementById('login').style.display = 'none';
+    document.getElementById('chat-container').style.display = 'flex';
+    document.getElementById('input-container').style.display = 'flex';
+    let username = localStorage.getItem('chat_username');
+    if (!username) {
+      username = prompt("¿Cómo te llamas?");
+      localStorage.setItem('chat_username', username);
+    }
+    addUser(username);
+    addEntry(username);
+    loadMessages();
+    loadUsers();
+  }
+
+  function addUser(name) {
+    let users = JSON.parse(localStorage.getItem('chat_users') || "[]");
+    if (!users.includes(name)) {
+      users.push(name);
+      localStorage.setItem('chat_users', JSON.stringify(users));
+    }
+    loadUsers();
+  }
+
+  function addEntry(name) {
+    const log = document.getElementById('entry-log');
+    const li = document.createElement('li');
+    li.textContent = `${name} ha entrado (${new Date().toLocaleTimeString()})`;
+    log.appendChild(li);
+  }
+
+  function loadUsers() {
+    const users = JSON.parse(localStorage.getItem('chat_users') || "[]");
+    const userList = document.getElementById('user-list');
+    userList.innerHTML = "";
+    users.forEach(u => {
+      const li = document.createElement('li');
+      li.textContent = u;
+      userList.appendChild(li);
+    });
+  }
+
+  function sendMessage() {
+    const input = document.getElementById('message-input');
+    if (input.value.trim() === "") return;
+    const message = {
+      user: localStorage.getItem('chat_username'),
+      text: input.value,
+      time: new Date().toLocaleTimeString()
+    };
+    saveMessage(message);
+    input.value = "";
+    loadMessages();
+  }
+
+  function saveMessage(msg) {
+    let messages = JSON.parse(localStorage.getItem('chat_messages') || "[]");
+    messages.push(msg);
+    localStorage.setItem('chat_messages', JSON.stringify(messages));
+  }
+
+  function loadMessages() {
+    const messagesDiv = document.getElementById('messages');
+    messagesDiv.innerHTML = "";
+    const messages = JSON.parse(localStorage.getItem('chat_messages') || "[]");
+    messages.forEach(m => {
+      const div = document.createElement('div');
+      div.className = 'message';
+      div.innerHTML = `<b>${m.user}</b> [${m.time}]: ${m.text || ''} ${m.file ? m.file : ''}`;
+      messagesDiv.appendChild(div);
+    });
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  }
+
+  function sendFile() {
+    const fileInput = document.getElementById('file-input');
+    const file = fileInput.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      let content = "";
+      if (file.type.startsWith('image/')) {
+        content = `<img src="${e.target.result}" onclick="this.remove()">`;
+      } else if (file.type.startsWith('audio/')) {
+        content = `<audio controls src="${e.target.result}" onended="this.remove()"></audio>`;
+      }
+      const message = {
+        user: localStorage.getItem('chat_username'),
+        file: content,
+        time: new Date().toLocaleTimeString()
+      };
+      saveMessage(message);
+      loadMessages();
+    }
+    reader.readAsDataURL(file);
+  }
+</script>
+
+</body>
+</html>
